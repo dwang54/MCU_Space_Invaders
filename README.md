@@ -1,1 +1,1 @@
-# ece362_eproject
+# ece362 mini project
