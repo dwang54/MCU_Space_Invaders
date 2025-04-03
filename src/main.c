@@ -183,6 +183,6 @@ int main()
 // for supporting that
 
 // 3 ground wires for common config - fine, that can all be a shared bus
-// For upper: R1, G1 and B1 serve as RGB (DAC???, gonna make SPI harder as the system needs
+// For upper: R1, G1 and B1 serve as RGB (cannot use SPI, read https://learn.adafruit.com/adafruit-protomatter-rgb-matrix-library/adding-a-new-device but some documents earlier)
 // to output these, which aren't just high or low, also limited bounds, arduino want's 5V, 
 // meaning that an op-amp may needed in feedback configuration
