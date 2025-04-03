@@ -127,7 +127,6 @@ const char key_map[4][4] = {{'1', '4', '7', '*'},
                             {'3', '6', '9', '#'},
                             {'A', 'B', 'C', 'D'}};
 
-
 // copied over code from lab 2
 void SysTick_Handler() 
 {
@@ -148,6 +147,7 @@ void SysTick_Handler()
     {
         last_char_pressed = key_map[current_col - 1][4 - pressed_row];
         printf("(%d, %d): %c\n", current_col-1, pressed_row - 1, last_char_pressed);
+        // an idea could be to invoke some sort of function response
     }
 
     // every invocation of SysTick_Handler changes the col that is powered
@@ -173,3 +173,16 @@ int main()
         asm("wfi");
     }
 }
+
+// planning for matrix implementation:
+// https://cdn-learn.adafruit.com/downloads/pdf/32x16-32x32-rgb-led-matrix.pdf
+// going to need to convert code from Arduino to C and recreate the package... 
+// also need to add wiring for SPI's with registers and connect that 
+// consideration: needs exactly 5V (anymore and stuffs broke, less and may not work properly),
+// may be get an independent source of 5V; also has high current draw of 4A, so another reason 
+// for supporting that
+
+// 3 ground wires for common config - fine, that can all be a shared bus
+// For upper: R1, G1 and B1 serve as RGB (DAC???, gonna make SPI harder as the system needs
+// to output these, which aren't just high or low, also limited bounds, arduino want's 5V, 
+// meaning that an op-amp may needed in feedback configuration
