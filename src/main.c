@@ -186,3 +186,6 @@ int main()
 // For upper: R1, G1 and B1 serve as RGB (cannot use SPI, read https://learn.adafruit.com/adafruit-protomatter-rgb-matrix-library/adding-a-new-device but some documents earlier)
 // to output these, which aren't just high or low, also limited bounds, arduino want's 5V, 
 // meaning that an op-amp may needed in feedback configuration
+
+// need seperate power source - https://www.youtube.com/watch?v=g7Zrnr4kGw8
+// find different github for code
