@@ -156,6 +156,48 @@ void SysTick_Handler()
     set_col(current_col);
 }
 
+
+
+//============================================================================
+// setup_dac()
+//============================================================================
+void setup_dac(void) {
+    RCC -> AHBENR |= RCC_AHBENR_GPIOAEN;
+    //analog operation for pin4
+    GPIOA -> MODER |= 0x0300;
+    //enables rcc clock for DAC
+    RCC -> APB1ENR |= RCC_APB1ENR_DACEN;
+    DAC -> CR &= ~0x00380000;
+    DAC -> CR |= DAC_CR_TEN1;
+    DAC -> CR |= DAC_CR_EN1;
+
+}
+
+//============================================================================
+// Timer 6 ISR
+//============================================================================
+// Write the Timer 6 ISR here.  Be sure to give it the right name.
+
+void TIM6_DAC_IRQHandler(void) {
+    TIM6 -> SR &= ~TIM_SR_UIF;
+    offset0 += step0;
+    offset1 += step1;
+    if (offset0 >= (N << 16)) {
+        offset0 -= (N << 16);
+    }
+    if (offset1 >= (N << 16)) {
+        offset1 -= (N << 16);
+    }
+
+    int samp = wavetable[offset0 >> 16] + wavetable[offset1 >> 16];
+    samp *= volume;
+    samp = samp >> 17;
+    samp += 2048;
+    DAC -> DHR12R1 = samp;
+
+}
+
+
 int main()
 {
     internal_clock();
