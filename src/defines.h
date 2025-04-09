@@ -8,12 +8,12 @@
 #define LCD_WIDTH 1
 #define LCD_HEIGHT 1
 
-enum DIRECTION {
+typedef enum _DIRECTION {
     LEFT,
     RIGHT,
     UP,
     DOWN
-};
+} DIRECTION;
 
 typedef enum _G_ID { // Graphic ID
     ASTEROID,
@@ -57,6 +57,6 @@ typedef struct _graphic {
 typedef struct _sound_effect {
     int* sound_wave;
     S_ID id;
-} sound_effect;
+} sfx;
 
 #endif
