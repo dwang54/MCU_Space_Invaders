@@ -15,12 +15,45 @@ void loop();
 void begin_game();
 void go_leaderboard();
 void end_game();
+player new_player();
+void spawn_wave(enemy* enemy_arr); // do it this way to avoid using the heap
+void sync_player_graphic(player* p);
+void move_enemies(enemy** enemies);
+
+
 
 // game loop running each frame
 void loop() {
-    for (;;) {
+    // settup
+    player p = new_player();
 
+    // creating enemies!
+    enemy enemies[ENEMY_ROWS][ENEMY_ROWS];
+    for (int i = 0; i < ENEMY_ROWS; ++i) {
+        spawn_wave(enemies[i]);
     }
+
+    p.player_graphic->next = enemies[0][0].enemy_graphic;
+
+    // begin game!
+
+    extern volatile char last_char_pressed;
+    for (;;) {
+        switch(last_char_pressed) {
+            case 'A': // move right!
+            case 'B': // move left!
+            case 'C': // SHOOT
+            case 'D': // prime the quit
+            case 'E': // actually quit
+            break;
+        }
+
+        sync_player_graphic(&p);
+        move_enemies(enemies);
+        display_entities(&p.player_graphic);
+    }
+
+    end_game();
 }
 
 /*
@@ -63,5 +96,38 @@ void go_leaderboard() {
 }
 
 void end_game() {
+
+}
+
+player new_player() {
+    return (player) {
+        .max_health = 3,
+        .curr_health = 3,
+        .speed = 5,
+        .cooldown = 1,
+        .score = 0
+    };
+}
+
+void spawn_wave(enemy* enemy_arr) {
+    for (size_t i = 0; i < ENEMY_ROWS; ++i) {
+        enemy_arr[i] = (enemy) {
+            .max_health = 3,
+            .curr_health = 3,
+            .speed = 1,
+            .cooldown = 5,
+        };
+    }
+}
+
+// I change thte direction of movement inside the loop() function
+// However, I must also link up the graphics struct position in p on each frame
+// Basically, I am applying the physics
+void sync_player_graphic(player* p) {
+
+}
+
+// Applying the physics to each monster and updating the graphics
+void move_enemies(enemy** enemies) {
 
 }

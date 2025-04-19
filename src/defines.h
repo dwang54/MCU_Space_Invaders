@@ -8,6 +8,9 @@
 #define LCD_WIDTH 1
 #define LCD_HEIGHT 1
 
+#define ENEMY_ROWS 5
+#define ENEMY_COLS 6
+
 typedef enum _DIRECTION {
     LEFT,
     RIGHT,
@@ -67,6 +70,16 @@ typedef struct _player {
     int8_t curr_health;
     int8_t speed;
     int8_t cooldown;
+    int score;
+    graphic* player_graphic;    // hold a pointer to the global graphic held in gameloop.c so we do not have to load it up each game start
 } player;
+
+typedef struct _enemy {
+    int8_t max_health;
+    int8_t curr_health;
+    int8_t speed;
+    int8_t cooldown;
+    graphic* enemy_graphic;     // same reason as player
+} enemy;
 
 #endif
