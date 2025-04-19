@@ -16,10 +16,12 @@ typedef enum _DIRECTION {
 } DIRECTION;
 
 typedef enum _G_ID { // Graphic ID
+    MAIN_MENU,
     ASTEROID,
     ENEMY,
     LASER,
-    PLAYER
+    PLAYER,
+    LEADERBOARD_GID,
     // TODO
     // add any more graphics if needed
 } G_ID;
@@ -50,6 +52,7 @@ typedef struct _graphic {
     Vec2d position;                                 // position in the world
     Vec2d velocity;                                 // current velocity in the world
     G_ID id;                                        // we have limited number of graphics, so we can track what type of graphic it is with id
+    struct _graphic* next;                          // linked list of graphics
 } graphic;
 
 
@@ -58,5 +61,12 @@ typedef struct _sound_effect {
     int* sound_wave;
     S_ID id;
 } sfx;
+
+typedef struct _player {
+    int8_t max_health;
+    int8_t curr_health;
+    int8_t speed;
+    int8_t cooldown;
+} player;
 
 #endif
