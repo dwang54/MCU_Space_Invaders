@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include "stm32f0xx.h"
+
 
 // TODO - I DO NOT KNOW
 #define LCD_WIDTH 1
@@ -25,12 +27,10 @@ typedef enum _G_ID { // Graphic ID
 } G_ID;
 
 typedef enum _S_ID { // Sound ID - is this even needed? Question for Daniel
-    ASTEROID_DESTROY,
-    ENEMY_DIE,
-    LASER_SHOOT,
-    GAME_OVER,
-    GAME_BEGIN,
-    PLAYER_HIT
+    ENEMY_DIE_SID,
+    LASER_SHOOT_SID,
+    PLAYER_DEATH_SID,
+    NO_SID
     // TODO
     // add any more sounds if needed
 } S_ID;
@@ -55,8 +55,9 @@ typedef struct _graphic {
 
 // struct to hold the sound wave when loaded in
 typedef struct _sound_effect {
-    int* sound_wave;
-    S_ID id;
+    unsigned char* sound_wave;            // array 
+    S_ID id;                              // s_id 
+    unsigned int len;            
 } sfx;
 
 #endif
