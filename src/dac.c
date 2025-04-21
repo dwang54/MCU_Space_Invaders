@@ -489,9 +489,6 @@ int offset0 = 0;
 int step1 = 0;
 int offset1 = 0;
 
-
-
-
 //============================================================================
 // setup_dac()
 //============================================================================
@@ -515,9 +512,10 @@ void setup_dac(void) {
 
 void TIM6_DAC_IRQHandler(void) {
     TIM6 -> SR &= ~TIM_SR_UIF;
-    if (current_sfx.id != NO_SID) {
+    if (current_sfx == NULL) {
         return;
     } 
+
     offset0 += step0;
     offset1 += step1;
     if (offset0 >= (N << 16)) {
@@ -527,7 +525,7 @@ void TIM6_DAC_IRQHandler(void) {
         offset1 -= (N << 16);
     }
 
-    int samp = current_sfx.sound_wave[offset0 >> 16] + current_sfx.sound_wave[offset1 >> 16];
+    int samp = current_sfx -> sound_wave[offset0 >> 16] + current_sfx -> sound_wave[offset1 >> 16];
     samp *= volume;
     samp = samp >> 17;
     samp += 2048;
@@ -547,6 +545,8 @@ void init_tim6(void) {
     TIM6 -> DIER |= 0x1;
     NVIC_EnableIRQ(TIM6_IRQn);
     TIM6 -> CR1 |= TIM_CR1_CEN;
+    //NVIC_SetPriority(TIM6_IRQn, 2);
+
         
 }
 
@@ -556,15 +556,11 @@ void play_sfx(S_ID sfx_id) {
     switch (sfx_id) {
         case LASER_SHOOT_SID: 
             current_sfx = &sfx_1;
-
         case ENEMY_DIE_SID:
             current_sfx = &sfx_2;
         case PLAYER_DEATH_SID:
             current_sfx = &sfx_3;
     }
-
-
-
 
 }
 
