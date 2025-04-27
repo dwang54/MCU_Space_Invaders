@@ -176,6 +176,12 @@ void init_matrix()
 
 void draw_pixel(int red, int green, int blue, int length, int depth)
 {
+    // check for out of bounds
+    if (depth >= LED_DEPTH || depth < 0 || length >= LED_LENGTH * 2 || length < 0)
+    {
+        return;
+    }
+    
     // need to invert depth, as the depth in array is reversed
     depth = LED_DEPTH - depth - 1;
 
@@ -202,6 +208,17 @@ void draw_pixel(int red, int green, int blue, int length, int depth)
         {
             commands[target_index] &= ~(R2_MASK + B2_MASK + G2_MASK);
             commands[target_index] |= (red != 0 ? R2_MASK : 0) | (blue != 0 ? B2_MASK : 0) | (green != 0 ? G2_MASK : 0);
+        }
+    }
+}
+
+void draw_rectangle(int red, int green, int blue, int length, int depth, int dim_length, int dim_depth)
+{
+    for (int x = 0; x < dim_length; x++)
+    {
+        for (int y = 0; y < dim_depth; y++)
+        {
+            draw_pixel(red, green, blue, length + x, depth + y);
         }
     }
 }
