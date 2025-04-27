@@ -1,8 +1,12 @@
+// please just do this in main, the platform.io seems to work this way
+
+/*
 #include "defines.h"
 #include "adc.c"
 #include "dac.c"
 #include "LedMatrix.c"
 #include "SDcard.c"
+*/
 
 /*
 Peripheral: All integrated together
@@ -11,6 +15,7 @@ Person: Everyone ideally
 Needed by any files: No; needs all other peripherals though
 */
 
+/*
 void loop();
 void begin_game();
 void go_leaderboard();
@@ -22,6 +27,7 @@ void loop() {
 
     }
 }
+*/
 
 /*
 1. Display main menu screen outlaying the option for the user
@@ -30,6 +36,8 @@ void loop() {
     B: Look at Leaderboard
 3. Begin game loop by calling loop()
 */
+
+/*
 void begin_game() {
     graphic main_menu = load_graphic(MAIN_MENU);
     display_entities(&main_menu);
@@ -65,3 +73,4 @@ void go_leaderboard() {
 void end_game() {
 
 }
+*/

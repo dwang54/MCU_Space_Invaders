@@ -5,9 +5,8 @@ Person: Francis
 Needed by any files: No; will be self contained
 */
 
-#include "stm32f0xx.h"
-
-uint32_t volume = 2048;
+#include "defines.h"
+uint32_t volume_adc = 2048;
 
 void setup_adc(void) {
     RCC->AHBENR |= RCC_AHBENR_GPIOAEN;          // Enable RCC for GPIOA
@@ -40,7 +39,7 @@ void TIM2_IRQHandler() {
     bcsum += boxcar[bcn] = ADC1->DR; // read converted value from ADC_DR
     bcn += 1;
     if (bcn >= BCSIZE) bcn = 0;
-    volume = bcsum / BCSIZE; 
+    volume_adc = bcsum / BCSIZE; 
 }
 
 //============================================================================
@@ -57,5 +56,5 @@ void init_tim2(void) {
 }
 
 uint32_t get_volume() {
-    return volume;
+    return volume_adc;
 }

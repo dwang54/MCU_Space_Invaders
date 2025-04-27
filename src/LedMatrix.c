@@ -5,43 +5,13 @@ Person: Caleb
 Needed by any files: Yes; game loop will call functions to render from here on every frame
 */
 
-#include "stm32f0xx.h"
-#include <stdint.h>
-#include <stdio.h>
-#include <unistd.h>
+#include "defines.h"
 
-extern void nano_wait(unsigned int n);
-
-#define CLK_MASK 0x40    // (1 << 6)
-#define OE_MASK  0x80    // (1 << 7)
-#define LAT_MASK 0x100   // (1 << 8)
-#define A_MASK   0x10    // (1 << 4)
-#define B_MASK   0x400   // (1 << 10)
-#define C_MASK   0x20    // (1 << 5)
-#define D_MASK   0x200   // (1 << 9)
-#define R1_MASK  0x1     // (1 << 0)
-#define B1_MASK  0x2     // (1 << 1)
-#define G1_MASK  0x1000   // (1 << 12)
-#define R2_MASK  0x4     // (1 << 2)
-#define B2_MASK  0x8     // (1 << 3)
-#define G2_MASK  0x800  // (1 << 11)
+volatile u_int16_t commands[NUM_ELEMENTS];
 
 // turn off OE for entire col
 // color code (on clk), color code (off clk), LAT on, LAT off
 // at end of column, set ABCD, then turn on OE
-
-// these dimensions are used in mind in regards to the actual number of commands in each one 
-// and don't account for the begining and end segments of each column 
-#define LED_LENGTH 16 // compressed dimensions for array compared to actual, 32 pixels in a row, but there are 2 RGB's for it
-#define LED_DEPTH 64 // dimensions of the actual LED matrix and the array
-// color code (on clk), color code (off clk), LAT on, LAT off
-#define SEGMENT_LENGTH_PER_PIXEL 4
-// LENGTH * (DEPTH * SEGMENT_LENGTH_PER_PIXEL + 3) // 3 is present for the commands at the beginning and end
-#define NUM_ELEMENTS 4144
-// (LED_DEPTH * SEGMENT_LENGTH_PER_PIXEL + 3 end commands)
-#define ARRAY_DEPTH 259
-
-volatile u_int16_t commands[NUM_ELEMENTS]; 
 
 void init_display()
 {
@@ -131,14 +101,13 @@ u_int16_t determine_position_code(int cur_col)
 void init_matrix()
 {
     int cur_col = 0;
-    int cur_row = 0;
     for (int index = 0; index < NUM_ELEMENTS; index++)
     {
         commands[index] = OE_MASK; // off by default
         if (index % ARRAY_DEPTH == 0) // if start of new col
         {
             // update cur_col
-            cur_col = (cur_col + 1) % LED_LENGTH;
+            cur_col = (cur_col + 1) % MATRIX_LENGTH;
         }
         else if (index % ARRAY_DEPTH == ARRAY_DEPTH - 2) // second to last command in col
         {
@@ -177,7 +146,7 @@ void init_matrix()
 void draw_pixel(int red, int green, int blue, int length, int depth)
 {
     // check for out of bounds
-    if (depth >= LED_DEPTH || depth < 0 || length >= LED_LENGTH * 2 || length < 0)
+    if (depth >= LED_DEPTH || depth < 0 || length >= LED_LENGTH || length < 0)
     {
         return;
     }
