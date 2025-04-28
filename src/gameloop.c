@@ -5,6 +5,7 @@
 #include "SDcard.c"
 
 #include <time.c>
+#include <time.h>
 
 /*
 Peripheral: All integrated together
@@ -13,19 +14,27 @@ Person: Everyone ideally
 Needed by any files: No; needs all other peripherals though
 */
 
+#define STARTING_X 5
+#define STARTING_Y 0
+#define STARTING_ENEMY_HEALTH 1
+#define STARTING_PLAYER_HEALTH 5
+
 void loop();
 void begin_game();
 void go_leaderboard();
 void end_game();
 player new_player();
-void spawn_wave(enemy* enemy_arr); // do it this way to avoid using the heap
-void move_player(player* p);
-void move_enemies(enemy enemies[ENEMY_ROWS][ENEMY_ROWS]);
-void move_laser(laser* l);
+void spawn_wave(enemy* enemy_arr, int row); // do it this way to avoid using the heap
+void move_sprite(sprite* s);
+void add_to_world(sprite* s);
 void player_shoot(laser* l);
 void display_entities(graphic* graphic_arr);
 
+// collision detection
 void check_laser_hit(laser* l, enemy enemies[ENEMY_ROWS][ENEMY_ROWS]);
+void check_enemy_on_wall(enemy enemies[ENEMY_ROWS][ENEMY_ROWS]);
+void check_player_on_wall(player* p);
+
 int is_wave_beat();
 void next_round(player* p, laser* l);
 int enemies_reach_bottom(enemy enemies[ENEMY_ROWS][ENEMY_ROWS]);
@@ -40,64 +49,74 @@ void loop() {
   // settup
   player p = new_player();
   laser l;
+  int quit_time = 0;
+  extern volatile char last_char_pressed;
 
   // creating enemies!
   enemy enemies[ENEMY_ROWS][ENEMY_ROWS];
   for (int i = 0; i < ENEMY_ROWS; ++i) {
-    spawn_wave(enemies[i]);
+    spawn_wave(enemies[i], i);
   }
-
-
-  p.player_graphic->next = enemies[0][0].enemy_graphic;
-  display_entities(p.player_graphic);
 
   // begin game!
 
-  extern volatile char last_char_pressed;
   for (;;) {
-    p.velocity = 0;
+    p.s.velocity.x = 0;
     switch(last_char_pressed) {
       case 'A': // move right!
-        p.velocity = 1;
-      case 'B': // move left!
-        p.velocity = -1;
+        p.s.velocity.x = 1;
+      case 'B': // move left!s
+        p.s.velocity.x = -1;
       case 'C': // SHOOT
         if (p.last_shot <= p.cooldown + time(NULL)) {
           player_shoot(&l);
         }
       case 'D': // prime the quit
-      case 'E': // actually quit
+        quit_time = time(NULL);
         break;
+      case 'E': // actually quit
+        if (quit_time + 5 <= time(NULL)) // within 5 seconds of priming, quit game
+          goto end_game_goto;
+        else
+          quit_time = time(NULL); // reprime
     }
 
     // applying all physics to the entites
-    move_player(&p);
-    move_enemies(enemies);
-    move_laser(&l);
+    move_sprite(&p.s);
+    move_sprite(&l.s);
 
-    // adding the graphics to the world array
-    add_to_world(&p);
-    add_to_world(&l);
+    // collision checking
+    // move laser and check if it hits before even moving enemies
+    check_laser_hit(&l, enemies);
+    check_enemy_on_wall(enemies);
+    check_player_on_wall(&p);
+
+    // moving enemies and adding graphics to world in one loop
     for (int i = 0; i < ENEMY_ROWS; ++i) {
       for (int j = 0; j < ENEMY_COLS; ++j) {
-        add_to_world(&enemies[i][j]);
+        move_sprite(&enemies[i][j].s);
+        add_to_world(&enemies[i][j].s);
       }
     }
+
+    // adding the graphics to the world array
+    add_to_world(&p.s);
+    add_to_world(&l.s);
     
     // displaying the whole world to the tft display
     display_world();
 
-    // collision checking
-    check_laser_hit(&l, enemies);
 
     // if all enemies are defeated, go to next round
     if (is_wave_beat()) {
       next_round(&p, &l);
-    } else if (enemies_reach_bottom()) {
+    } else if (enemies_reach_bottom(enemies)) {
+      goto end_game_goto;
       break;
     }
   }
 
+end_game_goto:
   end_game();
 }
 
@@ -156,52 +175,41 @@ void end_game() {
 
 player new_player() {
   return (player) {
-    .max_health = 3,
     .curr_health = 3,
-    .speed = 5,
-    .cooldown = 1,
-    .score = 0,
-    .player_graphic = load_graphic(PLAYER_GID),
-    .velocity = 0,
-    .last_shot = 0
+    .last_shot = 0,
+    .cooldown = 5,
+    .s = (sprite) {
+      load_graphic(PLAYER_GID),
+      .position = (Vec2d) { .x = STARTING_X, .y= STARTING_Y },
+      .velocity = (Vec2d) { .x = 0, .y = 0 },
+      .id = PLAYER_EID
+    }
   };
 }
 
-void spawn_wave(enemy* enemy_arr) {
-  for (size_t i = 0; i < ENEMY_ROWS; ++i) {
+void spawn_wave(enemy* enemy_arr, int row) {
+  for (size_t i = 0; i < ENEMY_COLS; ++i) {
     enemy_arr[i] = (enemy) {
-      .max_health = 3,
       .curr_health = 3,
-      .speed = 1,
-      .cooldown = 5,
-      .enemy_graphic = load_graphic(ENEMY_GID)
+      .s = (sprite) {
+        .graphic = load_graphic(ENEMY_GID),
+        .position = (Vec2d) { i, row },
+        .velocity = (Vec2d) { 0, 0 },
+        .id = ENEMY_EID
+      }
     };
   }
 }
 
-// I change thte direction of movement inside the loop() function
-// However, I must also link up the graphics struct position in p on each frame
-// Basically, I am applying the physics
-void move_player(player* p) {
+// Apply velocity to sprite's position
+void move_sprite(sprite* s) {
   // TODO
-
-}
-
-// Applying the physics to each monster and updating the graphics
-void move_enemies(enemy enemies[ENEMY_ROWS][ENEMY_ROWS]) {
-  // TODO
-
-}
-
-void move_laser(laser* l) {
 
 }
 
 void player_shoot(laser* l) {
 
 }
-
-
 
 void display_entities(graphic* graphic_arr) {
   
@@ -220,5 +228,5 @@ void next_round(player* p, laser* l) {
 }
 
 int enemies_reach_bottom(enemy enemies[ENEMY_ROWS][ENEMY_ROWS]) {
-  
+
 }

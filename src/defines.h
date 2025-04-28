@@ -31,6 +31,12 @@ typedef enum _G_ID { // Graphic ID
     // add any more graphics if needed
 } G_ID;
 
+typedef enum _E_ID { // Entity ID
+    ENEMY_EID,
+    LASER_EID,
+    PLAYER_EID
+} E_ID;
+
 typedef enum _S_ID { // Sound ID - is this even needed? Question for Daniel
     ASTEROID_DESTROY,
     ENEMY_DIE,
@@ -50,16 +56,21 @@ typedef struct _Vec2d {
 // graphics array can be 8 bits and RGB ranges to 0-255
 // all others can be 8 bits as display is within 255 range
 typedef struct _graphic {
-    uint8_t graphic_array[10][10];               // x by y array describing the colors of a given space; given const width and height to avoid heap
+    // bits 0-7 hold r, 8-15 g, 16 - 24 hold b
+    // pointer to a global array of 
+    uint32_t graphic_array[LCD_HEIGHT][LCD_WIDTH];  // x by y array describing the colors of a given space; given const width and height to avoid heap; is a global graphic
     uint8_t w;                                      // width
     uint8_t h;                                      // height
-    uint8_t z_level;                                // higher z level lets you get placed over other graphics when overlapping
-    Vec2d position;                                 // position in the world
-    Vec2d velocity;                                 // current velocity in the world
-    G_ID id;                                        // we have limited number of graphics, so we can track what type of graphic it is with id
+    uint8_t z_level;                                // higher z level lets you get placed over other graphics when overlapping    
     struct _graphic* next;                          // linked list of graphics
 } graphic;
 
+typedef struct _sprite {
+    graphic* graphic;   // pointer to a globally defined graphic struct
+    Vec2d position;     // position of sprite in the world (LCD)
+    Vec2d velocity;     // current velocity of the graphic - used to calculate position on the next frame
+    E_ID id;            // we have limited number of graphics, so we can track what type of graphic it is with id
+} sprite;
 
 // struct to hold the sound wave when loaded in
 typedef struct _sound_effect {
@@ -68,27 +79,19 @@ typedef struct _sound_effect {
 } sfx;
 
 typedef struct _player {
-    int8_t max_health;
     int8_t curr_health;
-    int8_t speed;
-    int8_t cooldown;
-    int score;
-    graphic* player_graphic;    // hold a pointer to the global graphic held in gameloop.c so we do not have to load it up each game start
-    int velocity;
     time_t last_shot;
+    time_t cooldown;
+    sprite s;
 } player;
 
 typedef struct _enemy {
-    int8_t max_health;
     int8_t curr_health;
-    int8_t speed;
-    int8_t cooldown;
-    graphic* enemy_graphic;     // same reason as player
+    sprite s;
 } enemy;
 
 typedef struct _laser {
-  int velocity;
-  graphic* laser_graphic
+  sprite s;
 } laser;
 
 #endif
