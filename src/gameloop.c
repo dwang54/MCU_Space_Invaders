@@ -1,19 +1,10 @@
 // please just do this in main, the platform.io seems to work this way
 
-/*
 #include "defines.h"
 #include <stddef.h>
 #include <time.h>
 
 #include "SDcard.c"
-*/
-
-/*
-Peripheral: All integrated together
-Usage: Holds the game loop and any helper functions needed
-Person: Everyone ideally
-Needed by any files: No; needs all other peripherals though
-*/
 
 #define STARTING_X 5
 #define STARTING_Y 0
@@ -30,6 +21,9 @@ Needed by any files: No; needs all other peripherals though
 #define G_COLOR_POS 8
 #define B_COLOR_MASK 0x000000FF
 #define B_COLOR_POS 0
+
+#define LCD_WIDTH 1
+#define LCD_HEIGHT 1
 
 void loop();
 void begin_game();
@@ -151,7 +145,7 @@ end_game_goto:
 3. Begin game loop by calling loop()
 */
 
-/*
+
 void begin_game() {
     sprite main_menu = (sprite) {
       .graphic = load_graphic(MAINMENU_GID),

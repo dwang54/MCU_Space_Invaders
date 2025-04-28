@@ -65,17 +65,6 @@ typedef enum _E_ID { // Entity ID
     ENDGAME_EID
 } E_ID;
 
-typedef enum _S_ID { // Sound ID - is this even needed? Question for Daniel
-    ASTEROID_DESTROY,
-    ENEMY_DIE,
-    LASER_SHOOT,
-    GAME_OVER,
-    GAME_BEGIN,
-    PLAYER_HIT
-    // TODO
-    // add any more sounds if needed
-} S_ID;
-
 typedef struct _Vec2d {
     int x;
     int y;
@@ -86,7 +75,7 @@ typedef struct _Vec2d {
 typedef struct _graphic {
     // bits 0-7 hold r, 8-15 g, 16 - 24 hold b
     // pointer to a global array of 
-    uint32_t graphic_array[LCD_HEIGHT][LCD_WIDTH];  // x by y array describing the colors of a given space; given const width and height to avoid heap; is a global graphic
+    uint32_t graphic_array[LED_DEPTH][LED_LENGTH];  // x by y array describing the colors of a given space; given const width and height to avoid heap; is a global graphic
     uint8_t w;                                      // width
     uint8_t h;                                      // height
     uint8_t z_level;                                // higher z level lets you get placed over other graphics when overlapping    
@@ -99,12 +88,6 @@ typedef struct _sprite {
     Vec2d velocity;     // current velocity of the graphic - used to calculate position on the next frame
     E_ID id;            // we have limited number of graphics, so we can track what type of graphic it is with id
 } sprite;
-
-// struct to hold the sound wave when loaded in
-typedef struct _sound_effect {
-    int* sound_wave;
-    S_ID id;
-} sfx;
 
 typedef struct _player {
     int8_t curr_health;
