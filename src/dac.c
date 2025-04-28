@@ -529,7 +529,7 @@ void TIM6_DAC_IRQHandler(void) {
     //     offset1 -= (N << 16);
     // }
 
-    int samp = current_sfx -> sound_wave[offset0 >> 16] + current_sfx -> sound_wave[offset1 >> 16];
+    int samp = current_sfx -> sound_wave[offset0 >> 16];
     // int samp = current_sfx -> sound_wave[offset0 >> 16] + current_sfx -> sound_wave[offset1 >> 16];
 
     samp *= volume_dac;
