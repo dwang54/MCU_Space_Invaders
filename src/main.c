@@ -61,33 +61,53 @@ int furthest_right = 0;
 int furthest_bottom = 0;
 int move_down_flag = 0;
 
+#define TEST_PLAYER 0
+#define TEST_INPUT 0
+#define TEST_LASER 0
+#define TEST_ENEMIES 0
+#define TEST_MAINMENU 0
+#define TEST_END_MENU 0
+
 // game loop running each frame
 void loop() {
+#if TEST_PLAYER
   // settup
   player p = new_player();
+
+#if TEST_LASER
   laser l;
+#endif
+
   int quit_time = 0;
   int hit_wall_flag;
   extern volatile char last_char_pressed;
 
   // creating enemies!
+#if TEST_ENEMIES
   enemy enemies[ENEMY_ROWS][ENEMY_COLS];
   for (int i = 0; i < ENEMY_ROWS; ++i) {
     spawn_wave(enemies[i], i);
   }
+#endif
 
   // begin game!
+#if TEST_INPUT
   for (;;) {
     p.s.velocity.x = 0;
     switch(last_char_pressed) {
       case 'A': // move right!
         p.s.velocity.x = 1;
+        break;
       case 'B': // move left!s
         p.s.velocity.x = -1;
+        break;
+#if TEST_LASER
       case 'C': // SHOOT
         if (p.last_shot <= p.cooldown + time(NULL)) {
           player_shoot(&p, &l);
         }
+        break;
+#endif
       case 'D': // prime the quit
         quit_time = time(NULL);
         break;
@@ -97,34 +117,48 @@ void loop() {
         else
           quit_time = time(NULL); // reprime
     }
+#endif
 
     // applying all physics to the entites
     move_sprite(&p.s, &hit_wall_flag);
+
+#if TEST_LASER
     move_sprite(&l.s, &hit_wall_flag);
+#endif
 
     // collision checking
     // move laser and check if it hits before even moving enemies
+
+#if TEST_ENEMIES && TEST_LASER
     check_laser_hit(&l, enemies);
+#endif
+#if TEST_ENEMIES
     check_enemy_on_wall(enemies);
+#endif
     check_player_on_wall(&p);
 
     // moving enemies and adding graphics to world in one loop
+#if TEST_ENEMIES
     for (int i = 0; i < ENEMY_ROWS; ++i) {
       for (int j = 0; j < ENEMY_COLS; ++j) {
         move_sprite(&enemies[i][j].s, &hit_wall_flag);
         add_to_world(&enemies[i][j].s);
       }
     }
+#endif
 
     // adding the graphics to the world array
     add_to_world(&p.s);
+#if TEST_LASER
     add_to_world(&l.s);
+#endif
     
     // displaying the whole world to the tft display
     display_world();
 
 
     // if all enemies are defeated, go to next round
+#if TEST_ENEMIES && TEST_LASER
     if (is_wave_beat()) {
       next_round(&p, &l);
     } else if (enemies_reach_bottom(enemies)) {
@@ -132,9 +166,13 @@ void loop() {
       break;
     }
   }
+#endif
 
 end_game_goto:
   end_game();
+#else
+  return;
+#endif
 }
 
 /*
@@ -145,6 +183,7 @@ end_game_goto:
 3. Begin game loop by calling loop()
 */
 void begin_game() {
+#if TEST_MAINMENU
     sprite main_menu = (sprite) {
       .graphic = load_graphic(MAINMENU_GID),
       .position = Vec2d_ZERO,
@@ -169,6 +208,9 @@ void begin_game() {
             // after leaderboard, restart the loop to allow user to go back to game loop
         }
     }
+#else 
+    loop();
+#endif
 }
 
 // May be too hard? Unless Taviish can find way to make usernames and integers a graphic to display!
@@ -193,6 +235,7 @@ void go_leaderboard() {
 }
 
 void end_game() {
+#if TEST_END_MENU
   sprite endgame = (sprite) {
     .graphic = load_graphic(ENDGAME_GID),
     .position = Vec2d_ZERO,
@@ -212,6 +255,9 @@ void end_game() {
           break;
       }
   }
+#else
+  return;
+#endif
 }
 
 player new_player() {
@@ -366,6 +412,8 @@ int main()
     
     init_matrix();
     init_display();
+
+    begin_game();
 
     draw_rectangle(1, 1, 1, 16, 32, 8, 8);
     
