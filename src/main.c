@@ -427,6 +427,10 @@ int main()
     setup_adc();
     init_tim2();
 
+    //set up dac
+    setup_dac();
+    init_tim6();
+
     printf("PRE-SOUND\n");
     init_sound_effects();
     init_audio_output();
