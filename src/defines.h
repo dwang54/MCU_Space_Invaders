@@ -6,6 +6,7 @@
 #include "stm32f0xx.h"
 #include <stdint.h>
 #include <stdio.h>
+#include <time.h>
 
 // CONSTANTS
 
@@ -33,6 +34,9 @@ typedef struct _sound_effect {
 
 
 // of currently unknown usage
+#define ENEMY_ROWS 5
+#define ENEMY_COLS 6
+
 typedef enum _DIRECTION {
     LEFT,
     RIGHT,
@@ -41,15 +45,36 @@ typedef enum _DIRECTION {
 } DIRECTION;
 
 typedef enum _G_ID { // Graphic ID
-    MAIN_MENU,
-    ASTEROID,
-    ENEMY,
-    LASER,
-    PLAYER,
+    MAINMENU_GID,
+    ASTEROID_SID,
+    ENEMY_GID,
+    LASER_GID,
+    PLAYER_GID,
     LEADERBOARD_GID,
+    ENDGAME_GID
     // TODO
     // add any more graphics if needed
 } G_ID;
+
+typedef enum _E_ID { // Entity ID
+    ENEMY_EID,
+    LASER_EID,
+    PLAYER_EID,
+    MAINMENU_EID,
+    LEADERBOARD_EID,
+    ENDGAME_EID
+} E_ID;
+
+typedef enum _S_ID { // Sound ID - is this even needed? Question for Daniel
+    ASTEROID_DESTROY,
+    ENEMY_DIE,
+    LASER_SHOOT,
+    GAME_OVER,
+    GAME_BEGIN,
+    PLAYER_HIT
+    // TODO
+    // add any more sounds if needed
+} S_ID;
 
 typedef struct _Vec2d {
     int x;
@@ -59,21 +84,33 @@ typedef struct _Vec2d {
 // graphics array can be 8 bits and RGB ranges to 0-255
 // all others can be 8 bits as display is within 255 range
 typedef struct _graphic {
-    uint8_t graphic_array[10][10];               // x by y array describing the colors of a given space; given const width and height to avoid heap
+    // bits 0-7 hold r, 8-15 g, 16 - 24 hold b
+    // pointer to a global array of 
+    uint32_t graphic_array[LCD_HEIGHT][LCD_WIDTH];  // x by y array describing the colors of a given space; given const width and height to avoid heap; is a global graphic
     uint8_t w;                                      // width
     uint8_t h;                                      // height
-    uint8_t z_level;                                // higher z level lets you get placed over other graphics when overlapping
-    Vec2d position;                                 // position in the world
-    Vec2d velocity;                                 // current velocity in the world
-    G_ID id;                                        // we have limited number of graphics, so we can track what type of graphic it is with id
+    uint8_t z_level;                                // higher z level lets you get placed over other graphics when overlapping    
     struct _graphic* next;                          // linked list of graphics
 } graphic;
 
+typedef struct _sprite {
+    graphic* graphic;   // pointer to a globally defined graphic struct
+    Vec2d position;     // position of sprite in the world (LCD) of the bottom left pixel
+    Vec2d velocity;     // current velocity of the graphic - used to calculate position on the next frame
+    E_ID id;            // we have limited number of graphics, so we can track what type of graphic it is with id
+} sprite;
+
+// struct to hold the sound wave when loaded in
+typedef struct _sound_effect {
+    int* sound_wave;
+    S_ID id;
+} sfx;
+
 typedef struct _player {
-    int8_t max_health;
     int8_t curr_health;
-    int8_t speed;
-    int8_t cooldown;
+    time_t last_shot;
+    time_t cooldown;
+    sprite s;
 } player;
 
 // FUNCTIONS
@@ -109,5 +146,15 @@ void play_sfx(S_ID sfx_id);
 // don't use these functions/variables!
 void setup_dac();
 void init_tim6();
+
+typedef struct _enemy {
+    int8_t curr_health;
+    sprite s;
+} enemy;
+
+typedef struct _laser {
+    int alive;
+    sprite s;
+} laser;
 
 #endif
