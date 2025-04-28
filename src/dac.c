@@ -461,12 +461,12 @@ sfx sfx_1; // sfx for shooting
 sfx sfx_2; // sfx for invader death
 sfx sfx_3; // sfx for player death 
 
-#define N 1000
+// #define N 1000
 #define RATE 20000
-int step0 = 0;
+int step0 = 1;
 int offset0 = 0;
-int step1 = 0;
-int offset1 = 0;
+// int step1 = 0;
+// int offset1 = 0;
 
 void init_audio_output(void)
 {
@@ -518,15 +518,20 @@ void TIM6_DAC_IRQHandler(void) {
     } 
 
     offset0 += step0;
-    offset1 += step1;
-    if (offset0 >= (N << 16)) {
-        offset0 -= (N << 16);
+    // offset1 += step1;
+    // if (offset0 >= (N << 16)) {
+    //     offset0 -= (N << 16);
+    // }
+     if (offset0 >= ((current_sfx -> len) << 16)) {
+        offset0 -= ((current_sfx -> len) << 16);
     }
-    if (offset1 >= (N << 16)) {
-        offset1 -= (N << 16);
-    }
+    // if (offset1 >= (N << 16)) {
+    //     offset1 -= (N << 16);
+    // }
 
     int samp = current_sfx -> sound_wave[offset0 >> 16] + current_sfx -> sound_wave[offset1 >> 16];
+    // int samp = current_sfx -> sound_wave[offset0 >> 16] + current_sfx -> sound_wave[offset1 >> 16];
+
     samp *= volume_dac;
     samp = samp >> 17;
     samp += 2048;
