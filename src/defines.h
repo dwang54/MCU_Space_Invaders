@@ -110,4 +110,11 @@ void play_sfx(S_ID sfx_id);
 void setup_dac();
 void init_tim6();
 
+// from adc.c
+void setup_adc(); // invoke both prior to using getting readings
+void init_tim2();
+uint32_t get_volume();
+// don't invoke this function
+void TIM2_IRQHandler();
+
 #endif

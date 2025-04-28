@@ -16,6 +16,32 @@ int main()
     setbuf(stdout,0);
     setbuf(stderr,0);
 
+    setup_adc();
+    init_tim2();
+
+    init_sound_effects();
+    init_audio_output();
+    nano_wait(10000000000);
+    play_sfx(ENEMY_DIE_SID);
+    printf("SOUND EFFECT 1\n");
+    nano_wait(10000000000);
+    play_sfx(LASER_SHOOT_SID);
+    printf("SOUND EFFECT 2\n");
+    nano_wait(10000000000);
+    play_sfx(PLAYER_DEATH_SID);
+    printf("SOUND EFFECT 3\n");
+    nano_wait(10000000000);
+    play_sfx(NO_SID);
+    printf("SOUND EFFECT 4\n");
+
+    /*
+    for (int i = 0; i < 5; i++)
+    {
+        nano_wait(1000000000);
+        printf("%d\n", get_volume());
+    }
+    */
+
     // let interrupts run the rest of the program
     for(;;) 
     {
