@@ -106,8 +106,14 @@ void init_sound_effects(); // do this first prior to using audio output!
 void init_audio_output();
 void TIM6_DAC_IRQHandler();
 void play_sfx(S_ID sfx_id);
-// don't use these functions/variables!
+// don't use these functions
 void setup_dac();
 void init_tim6();
 
+// from spidisplay.c 
+void init_7_segment_display();
+void set_message(char* msg);
+// do not call these:
+void init_spi1();
+void spi1_setup_dma();
 #endif

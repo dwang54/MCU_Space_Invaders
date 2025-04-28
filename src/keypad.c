@@ -70,6 +70,7 @@ void SysTick_Handler()
     if (pressed_row != 0)
     {
         last_char_pressed = key_map[current_col - 1][4 - pressed_row];
+        printf("%c\n", last_char_pressed);
         // an idea could be to invoke some sort of function response
     }
 

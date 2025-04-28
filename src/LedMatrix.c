@@ -21,6 +21,7 @@ Needed by any files: Yes; game loop will call functions to render from here on e
 #define B2_MASK  0x8     // (1 << 3)
 #define G2_MASK  0x800  // (1 << 11)
 #define NUM_ELEMENTS 4144
+
 // these dimensions are used in mind in regards to the actual number of commands in each one 
 // and don't account for the begining and end segments of each column 
 #define MATRIX_LENGTH 16 // compressed dimensions for array compared to actual, 32 pixels in a row, but there are 2 RGB's for it
