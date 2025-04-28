@@ -1,12 +1,8 @@
 #include "defines.h"
-#include "adc.c"
-#include "dac.c"
-#include "LedMatrix.c"
-#include "SDcard.c"
-
 #include <stddef.h>
-#include <time.c>
 #include <time.h>
+
+#include "SDcard.c"
 
 /*
 Peripheral: All integrated together
@@ -23,11 +19,11 @@ Needed by any files: No; needs all other peripherals though
 #define Vec2d_ZERO (Vec2d) { 0, 0 }
 #define Z_LEVEL_MASK 0xFF000000
 #define Z_LEVEL_POS 24
-#define R_COLOR_MASK 0x00FF0000;
+#define R_COLOR_MASK 0x00FF0000
 #define R_COLOR_POS 16
-#define G_COLOR_MASK 0x0000FF00;
+#define G_COLOR_MASK 0x0000FF00
 #define G_COLOR_POS 8
-#define B_COLOR_MASK 0x000000FF;
+#define B_COLOR_MASK 0x000000FF
 #define B_COLOR_POS 0
 
 void loop();
@@ -51,6 +47,8 @@ void check_player_on_wall(player* p);
 int is_wave_beat();
 void next_round(player* p, laser* l);
 int enemies_reach_bottom(enemy enemies[ENEMY_ROWS][ENEMY_ROWS]);
+
+void draw_pixel(int red, int green, int blue, int length, int depth);
 
 // with the api on caleb's led matrix, might not even need
 // I believe I simply draw each sprite on its own
@@ -283,9 +281,9 @@ void display_world() {
   for (size_t i = 0; i < LCD_HEIGHT; ++i) {
     for (size_t j = 0; j < LCD_WIDTH; ++j) {
       draw_pixel(
-        (world_graphic[i][j] & R_COLOR_MASK),
-        (world_graphic[i][j] & G_COLOR_MASK),
-        (world_graphic[i][j] & B_COLOR_MASK),
+        (world_graphic[i][j] & R_COLOR_MASK) >> R_COLOR_POS,
+        (world_graphic[i][j] & G_COLOR_MASK) >> G_COLOR_POS,
+        (world_graphic[i][j] & B_COLOR_MASK) >> B_COLOR_POS,
         j, i
       );
     }
