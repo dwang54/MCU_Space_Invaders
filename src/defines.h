@@ -130,7 +130,6 @@ void play_sfx(S_ID sfx_id);
 void setup_dac();
 void init_tim6();
 
-<<<<<<< HEAD
 // from adc.c
 void setup_adc(); // invoke both prior to using getting readings
 void init_tim2();
@@ -138,8 +137,6 @@ uint32_t get_volume();
 // don't invoke this function
 void TIM2_IRQHandler();
 
-#endif
-=======
 typedef struct _enemy {
     int8_t curr_health;
     sprite s;
@@ -149,6 +146,4 @@ typedef struct _laser {
     int alive;
     sprite s;
 } laser;
-
 #endif
->>>>>>> 646249da1d42b731c03339e165f9c978cd2ad661
