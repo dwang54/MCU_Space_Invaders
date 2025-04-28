@@ -63,8 +63,8 @@ int move_down_flag = 0;
 
 #define TEST_PLAYER 0
 #define TEST_INPUT 0
-#define TEST_ENEMIES 0
 #define TEST_LASER 0
+#define TEST_ENEMIES 0
 #define TEST_MAINMENU 0
 #define TEST_END_MENU 0
 
