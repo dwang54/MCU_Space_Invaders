@@ -1,5 +1,5 @@
 // please just do this in main, the platform.io seems to work this way
-
+/*
 #include "defines.h"
 #include <stddef.h>
 #include <time.h>
@@ -136,6 +136,7 @@ void loop() {
 end_game_goto:
   end_game();
 }
+*/
 
 /*
 1. Display main menu screen outlaying the option for the user
@@ -145,7 +146,7 @@ end_game_goto:
 3. Begin game loop by calling loop()
 */
 
-
+/*
 void begin_game() {
     sprite main_menu = (sprite) {
       .graphic = load_graphic(MAINMENU_GID),
@@ -358,4 +359,4 @@ void next_round(player* p, laser* l) {
 int enemies_reach_bottom() {
   if (furthest_bottom <= 5) return 1;
   return 0;
-}
+}*/

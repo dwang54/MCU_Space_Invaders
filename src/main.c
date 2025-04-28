@@ -212,7 +212,7 @@ void begin_game() {
     loop();
 #endif
 }
-
+/*
 // May be too hard? Unless Taviish can find way to make usernames and integers a graphic to display!
 void go_leaderboard() {
     sprite leaderboard = (sprite) {
@@ -232,7 +232,7 @@ void go_leaderboard() {
             break;
         }
     }
-}
+}*/
 
 void end_game() {
 #if TEST_END_MENU
@@ -259,7 +259,7 @@ void end_game() {
   return;
 #endif
 }
-
+/*
 player new_player() {
   return (player) {
     .curr_health = 3,
@@ -272,8 +272,9 @@ player new_player() {
       .id = PLAYER_EID
     }
   };
-}
+}*/
 
+/*
 void spawn_wave(enemy* enemy_arr, int row) {
   for (size_t i = 0; i < ENEMY_COLS; ++i) {
     enemy_arr[i] = (enemy) {
@@ -286,7 +287,7 @@ void spawn_wave(enemy* enemy_arr, int row) {
       }
     };
   }
-}
+}*/
 
 // Apply velocity to sprite's position
 void move_sprite(sprite* s, int* hit_wall_flag) {
@@ -304,6 +305,7 @@ void move_sprite(sprite* s, int* hit_wall_flag) {
     *hit_wall_flag = 0;
 }
 
+/*
 void player_shoot(player* p, laser* l) {
   *l = (laser) {
     .alive = 1,
@@ -314,7 +316,7 @@ void player_shoot(player* p, laser* l) {
       .id = LASER_EID
     }
   };
-}
+}*/
 
 void clear_world() {
   for (size_t i = 0; i < LCD_HEIGHT; ++i) {
@@ -413,7 +415,7 @@ int main()
     init_matrix();
     init_display();
 
-    begin_game();
+    // begin_game();
 
     draw_rectangle(1, 1, 1, 16, 32, 8, 8);
     
@@ -425,20 +427,12 @@ int main()
     setup_adc();
     init_tim2();
 
+    printf("PRE-SOUND\n");
     init_sound_effects();
     init_audio_output();
-    nano_wait(10000000000);
+    nano_wait(1000000000);
     play_sfx(ENEMY_DIE_SID);
     printf("SOUND EFFECT 1\n");
-    nano_wait(10000000000);
-    play_sfx(LASER_SHOOT_SID);
-    printf("SOUND EFFECT 2\n");
-    nano_wait(10000000000);
-    play_sfx(PLAYER_DEATH_SID);
-    printf("SOUND EFFECT 3\n");
-    nano_wait(10000000000);
-    play_sfx(NO_SID);
-    printf("SOUND EFFECT 4\n");
 
     /*
     for (int i = 0; i < 5; i++)

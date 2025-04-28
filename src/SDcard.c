@@ -10,7 +10,8 @@ Needed by any files: Yes; will call load functions at beginning of game loop; fo
 
 #include "defines.h"
 
+/*
 graphic* load_graphic(G_ID g_id) {
     // can use in load_all_graphics
     
-}
+}*/
