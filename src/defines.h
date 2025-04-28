@@ -34,7 +34,10 @@ typedef enum _G_ID { // Graphic ID
 typedef enum _E_ID { // Entity ID
     ENEMY_EID,
     LASER_EID,
-    PLAYER_EID
+    PLAYER_EID,
+    MAINMENU_EID,
+    LEADERBOARD_EID,
+    ENDGAME_EID
 } E_ID;
 
 typedef enum _S_ID { // Sound ID - is this even needed? Question for Daniel
@@ -67,7 +70,7 @@ typedef struct _graphic {
 
 typedef struct _sprite {
     graphic* graphic;   // pointer to a globally defined graphic struct
-    Vec2d position;     // position of sprite in the world (LCD)
+    Vec2d position;     // position of sprite in the world (LCD) of the bottom left pixel
     Vec2d velocity;     // current velocity of the graphic - used to calculate position on the next frame
     E_ID id;            // we have limited number of graphics, so we can track what type of graphic it is with id
 } sprite;
@@ -91,7 +94,8 @@ typedef struct _enemy {
 } enemy;
 
 typedef struct _laser {
-  sprite s;
+    int alive;
+    sprite s;
 } laser;
 
 #endif

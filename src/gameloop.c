@@ -4,6 +4,7 @@
 #include "LedMatrix.c"
 #include "SDcard.c"
 
+#include <stddef.h>
 #include <time.c>
 #include <time.h>
 
@@ -18,6 +19,16 @@ Needed by any files: No; needs all other peripherals though
 #define STARTING_Y 0
 #define STARTING_ENEMY_HEALTH 1
 #define STARTING_PLAYER_HEALTH 5
+#define LASER_SPEED 5
+#define Vec2d_ZERO (Vec2d) { 0, 0 }
+#define Z_LEVEL_MASK 0xFF000000
+#define Z_LEVEL_POS 24
+#define R_COLOR_MASK 0x00FF0000;
+#define R_COLOR_POS 16
+#define G_COLOR_MASK 0x0000FF00;
+#define G_COLOR_POS 8
+#define B_COLOR_MASK 0x000000FF;
+#define B_COLOR_POS 0
 
 void loop();
 void begin_game();
@@ -26,9 +37,11 @@ void end_game();
 player new_player();
 void spawn_wave(enemy* enemy_arr, int row); // do it this way to avoid using the heap
 void move_sprite(sprite* s);
+void player_shoot(player* p, laser* l);
+
+void clear_world();
 void add_to_world(sprite* s);
-void player_shoot(laser* l);
-void display_entities(graphic* graphic_arr);
+void display_world();
 
 // collision detection
 void check_laser_hit(laser* l, enemy enemies[ENEMY_ROWS][ENEMY_ROWS]);
@@ -42,7 +55,9 @@ int enemies_reach_bottom(enemy enemies[ENEMY_ROWS][ENEMY_ROWS]);
 // with the api on caleb's led matrix, might not even need
 // I believe I simply draw each sprite on its own
 // Would love to draw everything all at once -> will look into that
-uint8_t world_graphic[LCD_HEIGHT][LCD_WIDTH]; // will display on each render
+// World is with 0,0 as the bottom left pixel
+uint32_t world_graphic[LCD_HEIGHT][LCD_WIDTH]; // will display on each render
+unsigned int curr_hit = 0;
 
 // game loop running each frame
 void loop() {
@@ -59,7 +74,6 @@ void loop() {
   }
 
   // begin game!
-
   for (;;) {
     p.s.velocity.x = 0;
     switch(last_char_pressed) {
@@ -69,7 +83,7 @@ void loop() {
         p.s.velocity.x = -1;
       case 'C': // SHOOT
         if (p.last_shot <= p.cooldown + time(NULL)) {
-          player_shoot(&l);
+          player_shoot(&p, &l);
         }
       case 'D': // prime the quit
         quit_time = time(NULL);
@@ -128,9 +142,18 @@ end_game_goto:
 3. Begin game loop by calling loop()
 */
 void begin_game() {
-    graphic* main_menu = load_graphic(MAINMENU_GID);
-    display_entities(main_menu);
+    sprite main_menu = (sprite) {
+      .graphic = load_graphic(MAINMENU_GID),
+      .position = Vec2d_ZERO,
+      .velocity = Vec2d_ZERO,
+      .id = MAINMENU_EID
+    };
+
+    add_to_world(&main_menu);
+    display_world();
+
     extern volatile char last_char_pressed;
+
     for (;;) {
         if (last_char_pressed == 'A') {
             // Start game
@@ -145,11 +168,18 @@ void begin_game() {
     }
 }
 
-
 // May be too hard? Unless Taviish can find way to make usernames and integers a graphic to display!
 void go_leaderboard() {
-    graphic* leaderboard_graphic = load_graphic(LEADERBOARD_GID);
-    display_entities(leaderboard_graphic); // Do I need to display everytime, or does LCD clear skin after each frame on its own?
+    sprite leaderboard = (sprite) {
+      .graphic = load_graphic(LEADERBOARD_GID),
+      .position = Vec2d_ZERO,
+      .velocity = Vec2d_ZERO,
+      .id = LEADERBOARD_EID
+    };
+
+    add_to_world(&leaderboard);
+    display_world();
+
     extern volatile char last_char_pressed;
     for (;;) {
         if (last_char_pressed == 'B') {
@@ -159,12 +189,20 @@ void go_leaderboard() {
     }
 }
 
-// TODO
 void end_game() {
-  graphic* endgame_graphic = load_graphic(ENDGAME_GID);
-  display_entities(endgame_graphic); // Do I need to display everytime, or does LCD clear skin after each frame on its own?
+  sprite endgame = (sprite) {
+    .graphic = load_graphic(ENDGAME_GID),
+    .position = Vec2d_ZERO,
+    .velocity = Vec2d_ZERO,
+    .id = ENEMY_EID
+  };
+
+  add_to_world(&endgame);
+  display_world();
+
   extern volatile char last_char_pressed;
   char prev = last_char_pressed;
+
   for (;;) {
       if (last_char_pressed != prev) {
           // User exits enggame display by pressing any character not the same as before
@@ -181,7 +219,7 @@ player new_player() {
     .s = (sprite) {
       load_graphic(PLAYER_GID),
       .position = (Vec2d) { .x = STARTING_X, .y= STARTING_Y },
-      .velocity = (Vec2d) { .x = 0, .y = 0 },
+      .velocity = Vec2d_ZERO,
       .id = PLAYER_EID
     }
   };
@@ -194,7 +232,7 @@ void spawn_wave(enemy* enemy_arr, int row) {
       .s = (sprite) {
         .graphic = load_graphic(ENEMY_GID),
         .position = (Vec2d) { i, row },
-        .velocity = (Vec2d) { 0, 0 },
+        .velocity = Vec2d_ZERO,
         .id = ENEMY_EID
       }
     };
@@ -203,19 +241,88 @@ void spawn_wave(enemy* enemy_arr, int row) {
 
 // Apply velocity to sprite's position
 void move_sprite(sprite* s) {
-  // TODO
-
+  s->position.x += s->velocity.x;
+  s->position.y += s->velocity.y;
 }
 
-void player_shoot(laser* l) {
-
+void player_shoot(player* p, laser* l) {
+  *l = (laser) {
+    .alive = 1,
+    .s = (sprite) {
+      .graphic = load_graphic(LASER_GID),
+      .position = p->s.position,
+      .velocity = (Vec2d) { 0, LASER_SPEED },
+      .id = LASER_EID
+    }
+  };
 }
 
-void display_entities(graphic* graphic_arr) {
-  
+void clear_world() {
+  for (size_t i = 0; i < LCD_HEIGHT; ++i) {
+    for (size_t j = 0; j < LCD_WIDTH; ++j) {
+      world_graphic[i][j] = 0;
+    }
+  }
+}
+
+void add_to_world(sprite* s) {
+  graphic* g = s->graphic;
+  Vec2d pos = s->position;
+  for (size_t i = 0; i < g->h; ++i) {
+    for (size_t j = 0; j < g->w; ++j) {
+      uint8_t z_level = (world_graphic[i+pos.y][i+pos.x] & Z_LEVEL_MASK) >> 24;
+      if (z_level >= g->z_level)
+        continue;
+      uint32_t color = (g->z_level << Z_LEVEL_POS) + g->graphic_array[i][j];
+      world_graphic[i+pos.y][i+pos.x] = color;
+    }
+  }
+}
+
+void display_world() {
+  for (size_t i = 0; i < LCD_HEIGHT; ++i) {
+    for (size_t j = 0; j < LCD_WIDTH; ++j) {
+      draw_pixel(
+        (world_graphic[i][j] & R_COLOR_MASK),
+        (world_graphic[i][j] & G_COLOR_MASK),
+        (world_graphic[i][j] & B_COLOR_MASK),
+        j, i
+      );
+    }
+  }
+
+  // after displaying, clear world for next display
+  // for better optimizations, would ideally keep the same display from pervious cycle and simply manipulate it
+  clear_world();
 }
 
 void check_laser_hit(laser* l, enemy enemies[ENEMY_ROWS][ENEMY_ROWS]) {
+
+  if (!l->alive)
+    return;
+
+  for (size_t i = 0; i < ENEMY_ROWS; ++i) {
+    for (size_t j = 0; j < ENEMY_ROWS; ++j) {
+      enemy* curr_enemy = &enemies[i][j];
+      if (curr_enemy->curr_health <= 0) 
+        continue;
+      if ((curr_enemy->s.position.x >= l->s.position.x && curr_enemy->s.position.x <= l->s.position.x + curr_enemy->s.graphic->w) &&
+      (curr_enemy->s.position.y >= l->s.position.y && curr_enemy->s.position.y <= l->s.position.y + curr_enemy->s.graphic->h)) {
+        curr_enemy->curr_health--;
+        if (curr_enemy->curr_health == 0)
+          curr_hit++;
+        l->alive = 0;
+        return;
+      }
+    }
+  }
+}
+
+void check_enemy_on_wall(enemy enemies[ENEMY_ROWS][ENEMY_ROWS]) {
+
+}
+
+void check_player_on_wall(player* p) {
 
 }
 
