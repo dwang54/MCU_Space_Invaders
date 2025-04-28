@@ -31,7 +31,7 @@ void init_spi1() {
     // Need to avoid setting to 0 then OR-ing causes the value
     // to instead to be set to 8-bit data size then OR-ed; this is because 
     // of not used values; setting value to 16-bit data size
-    SPI1->CR2 = 0xF << 8;
+    SPI1->CR2 |= SPI_CR2_DS;
 
     // set SPI1 to master mode
     SPI1->CR1 |= SPI_CR1_MSTR;
@@ -56,13 +56,13 @@ void spi1_setup_dma(void) {
 
     // Choose DMA1 Channel 3 as it contains the TX (transmission) of SPI1
     // Set the memory address to be read from as display
-    DMA1_Channel3->CMAR = (uint32_t *) display;
+    DMA1_Channel3->CMAR = (uint32_t) display;
 
     // Set the peripheral address to SPI1's data register
-    DMA1_Channel3->CPAR = (uint32_t *) &(SPI1->DR);
+    DMA1_Channel3->CPAR = (uint32_t) &(SPI1->DR);
     
-    // Set the number of data register to be 16 (16 'packets' to be sent)
-    DMA1_Channel3->CNDTR = 16;
+    // Set the number of data register to be 8 (8 'packets' to be sent)
+    DMA1_Channel3->CNDTR = MSG_LENGTH;
 
     // Set the DIRection for copying from-memory-to-peripheral (read from memory, 1)
     DMA1_Channel3->CCR |= DMA_CCR_DIR;
@@ -99,19 +99,14 @@ void set_message(char* msg)
         }
         else
         {
-            display[i] = font[msg[i]];
+            display[i] = font[(int) msg[i]];
         }
     }
     while (i < MSG_LENGTH)
     {
-        display[i] = font[' '];
+        display[i] = font[(int)' '];
         i++;
     }
-    for (i = 0; i < MSG_LENGTH; i++)
-    {
-        printf("%x\n", display[i]);
-    }
-    printf("\n");
 }
 
 void init_7_segment_display()

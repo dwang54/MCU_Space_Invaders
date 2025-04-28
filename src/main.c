@@ -15,7 +15,7 @@ int main()
 
     nano_wait(1000000000);
     init_7_segment_display();
-    set_message("HELLO");
+    set_message("ECE 362");
 
     // get rid of buffers for printing
     setbuf(stdin,0); 
