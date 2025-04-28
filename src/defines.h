@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <time.h>
 
 // TODO - I DO NOT KNOW
 #define LCD_WIDTH 1
@@ -19,12 +20,13 @@ typedef enum _DIRECTION {
 } DIRECTION;
 
 typedef enum _G_ID { // Graphic ID
-    MAIN_MENU,
-    ASTEROID,
-    ENEMY,
-    LASER,
-    PLAYER,
+    MAINMENU_GID,
+    ASTEROID_SID,
+    ENEMY_GID,
+    LASER_GID,
+    PLAYER_GID,
     LEADERBOARD_GID,
+    ENDGAME_GID
     // TODO
     // add any more graphics if needed
 } G_ID;
@@ -72,6 +74,8 @@ typedef struct _player {
     int8_t cooldown;
     int score;
     graphic* player_graphic;    // hold a pointer to the global graphic held in gameloop.c so we do not have to load it up each game start
+    int velocity;
+    time_t last_shot;
 } player;
 
 typedef struct _enemy {
@@ -81,5 +85,10 @@ typedef struct _enemy {
     int8_t cooldown;
     graphic* enemy_graphic;     // same reason as player
 } enemy;
+
+typedef struct _laser {
+  int velocity;
+  graphic* laser_graphic
+} laser;
 
 #endif

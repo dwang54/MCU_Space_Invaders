@@ -21,7 +21,7 @@ graphic* load_all_graphics() {
 
 // you could make a load_graphic(G_ID g_id)
 // I do not know if it will be used outside this file; will be discussed when game loop gets worked on and others start working on peripheral
-graphic load_graphic(G_ID g_id) {
+graphic* load_graphic(G_ID g_id) {
     // can use in load_all_graphics
 }
 
