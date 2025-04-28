@@ -16,6 +16,7 @@ Needed by any files: No; needs all other peripherals though
 #define STARTING_ENEMY_HEALTH 1
 #define STARTING_PLAYER_HEALTH 5
 #define LASER_SPEED 5
+#define ENEMY_SPEED 5
 #define Vec2d_ZERO (Vec2d) { 0, 0 }
 #define Z_LEVEL_MASK 0xFF000000
 #define Z_LEVEL_POS 24
@@ -32,7 +33,7 @@ void go_leaderboard();
 void end_game();
 player new_player();
 void spawn_wave(enemy* enemy_arr, int row); // do it this way to avoid using the heap
-void move_sprite(sprite* s);
+void move_sprite(sprite* s, int* hit_wall_flag);
 void player_shoot(player* p, laser* l);
 
 void clear_world();
@@ -40,13 +41,13 @@ void add_to_world(sprite* s);
 void display_world();
 
 // collision detection
-void check_laser_hit(laser* l, enemy enemies[ENEMY_ROWS][ENEMY_ROWS]);
-void check_enemy_on_wall(enemy enemies[ENEMY_ROWS][ENEMY_ROWS]);
+void check_laser_hit(laser* l, enemy enemies[ENEMY_ROWS][ENEMY_COLS]);
+void check_enemy_on_wall(enemy enemies[ENEMY_ROWS][ENEMY_COLS]);
 void check_player_on_wall(player* p);
 
 int is_wave_beat();
 void next_round(player* p, laser* l);
-int enemies_reach_bottom(enemy enemies[ENEMY_ROWS][ENEMY_ROWS]);
+int enemies_reach_bottom();
 
 void draw_pixel(int red, int green, int blue, int length, int depth);
 
@@ -56,6 +57,11 @@ void draw_pixel(int red, int green, int blue, int length, int depth);
 // World is with 0,0 as the bottom left pixel
 uint32_t world_graphic[LCD_HEIGHT][LCD_WIDTH]; // will display on each render
 unsigned int curr_hit = 0;
+int enemy_velocity_x = ENEMY_SPEED;
+int furthest_left = 0;
+int furthest_right = 0;
+int furthest_bottom = 0;
+int move_down_flag = 0;
 
 // game loop running each frame
 void loop() {
@@ -63,10 +69,11 @@ void loop() {
   player p = new_player();
   laser l;
   int quit_time = 0;
+  int hit_wall_flag;
   extern volatile char last_char_pressed;
 
   // creating enemies!
-  enemy enemies[ENEMY_ROWS][ENEMY_ROWS];
+  enemy enemies[ENEMY_ROWS][ENEMY_COLS];
   for (int i = 0; i < ENEMY_ROWS; ++i) {
     spawn_wave(enemies[i], i);
   }
@@ -94,8 +101,8 @@ void loop() {
     }
 
     // applying all physics to the entites
-    move_sprite(&p.s);
-    move_sprite(&l.s);
+    move_sprite(&p.s, &hit_wall_flag);
+    move_sprite(&l.s, &hit_wall_flag);
 
     // collision checking
     // move laser and check if it hits before even moving enemies
@@ -106,7 +113,7 @@ void loop() {
     // moving enemies and adding graphics to world in one loop
     for (int i = 0; i < ENEMY_ROWS; ++i) {
       for (int j = 0; j < ENEMY_COLS; ++j) {
-        move_sprite(&enemies[i][j].s);
+        move_sprite(&enemies[i][j].s, &hit_wall_flag);
         add_to_world(&enemies[i][j].s);
       }
     }
@@ -238,9 +245,19 @@ void spawn_wave(enemy* enemy_arr, int row) {
 }
 
 // Apply velocity to sprite's position
-void move_sprite(sprite* s) {
+void move_sprite(sprite* s, int* hit_wall_flag) {
   s->position.x += s->velocity.x;
   s->position.y += s->velocity.y;
+
+  if (s->position.x >= LCD_WIDTH || s->position.x < 0) {
+    *hit_wall_flag = 1;
+    s->position.x -= s->velocity.x;
+  } else if (s->position.y >= LCD_HEIGHT || s->position.y < 0) {
+    *hit_wall_flag = 1;
+    s->position.y -= s->position.y;
+  }
+  else 
+    *hit_wall_flag = 0;
 }
 
 void player_shoot(player* p, laser* l) {
@@ -294,7 +311,7 @@ void display_world() {
   clear_world();
 }
 
-void check_laser_hit(laser* l, enemy enemies[ENEMY_ROWS][ENEMY_ROWS]) {
+void check_laser_hit(laser* l, enemy enemies[ENEMY_ROWS][ENEMY_COLS]) {
 
   if (!l->alive)
     return;
@@ -304,6 +321,7 @@ void check_laser_hit(laser* l, enemy enemies[ENEMY_ROWS][ENEMY_ROWS]) {
       enemy* curr_enemy = &enemies[i][j];
       if (curr_enemy->curr_health <= 0) 
         continue;
+      // check colission again
       if ((curr_enemy->s.position.x >= l->s.position.x && curr_enemy->s.position.x <= l->s.position.x + curr_enemy->s.graphic->w) &&
       (curr_enemy->s.position.y >= l->s.position.y && curr_enemy->s.position.y <= l->s.position.y + curr_enemy->s.graphic->h)) {
         curr_enemy->curr_health--;
@@ -316,22 +334,28 @@ void check_laser_hit(laser* l, enemy enemies[ENEMY_ROWS][ENEMY_ROWS]) {
   }
 }
 
-void check_enemy_on_wall(enemy enemies[ENEMY_ROWS][ENEMY_ROWS]) {
-
-}
-
-void check_player_on_wall(player* p) {
-
+void check_enemy_on_wall(enemy enemies[ENEMY_ROWS][ENEMY_COLS]) {
+  if (furthest_left <= 10) {
+    move_down_flag = 1;
+    enemy_velocity_x = ENEMY_SPEED;  // make direction to the right
+  } else if (furthest_right >= LCD_WIDTH - 10) {
+    move_down_flag = 1;
+    enemy_velocity_x = -ENEMY_SPEED; // make direction to the left
+  } else {
+    move_down_flag = 0;
+  }
 }
 
 int is_wave_beat() {
-
+  if (curr_hit == ENEMY_ROWS * ENEMY_COLS) return 1;
+  return 0;
 }
 
 void next_round(player* p, laser* l) {
 
 }
 
-int enemies_reach_bottom(enemy enemies[ENEMY_ROWS][ENEMY_ROWS]) {
-
+int enemies_reach_bottom() {
+  if (furthest_bottom <= 5) return 1;
+  return 0;
 }
