@@ -137,6 +137,13 @@ uint32_t get_volume();
 // don't invoke this function
 void TIM2_IRQHandler();
 
+// from spidisplay.c 
+void init_7_segment_display();
+void set_message(char* msg);
+// do not call these:
+void init_spi1();
+void spi1_setup_dma();
+
 typedef struct _enemy {
     int8_t curr_health;
     sprite s;
