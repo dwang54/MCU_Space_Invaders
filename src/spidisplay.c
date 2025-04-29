@@ -3,26 +3,27 @@
 #define MSG_LENGTH 8
 
 volatile uint16_t display[MSG_LENGTH];
+
 extern const char font[];
 
-void init_spi1() {
-    // RCC enable for SPI1
+void init_spi1(void) {
+    // Enable SPI2 peripheral in RCC
     RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;
 
-    // RCC enable for GPIOA
+    // Enable GPIOB in RCC
     RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
 
     // Set PA5, PA7, and PA15 to alternative function (10)
     GPIOA->MODER &= ~((0x33 << 10) + (0x3 << 30));
     GPIOA->MODER |= (0x22 << 10) + (0x2 << 30);
 
-    // Set up alternative functions for GPIOA pins selected in AFR (alternative function register)
+    // Set up alternative functions for GPIOB pins selected in AFR (alternative function register)
     // [0] is the low register (pins 0-7), [1] is the high register (pins 8-15); 4 bits per register
-    // refer to table 14 in STM32F091xBC.pdf for more information
+    // refer to table 15 in STM32F091xBC.pdf for more information
     GPIOA->AFR[0] &= ~(0xF0F << (4 * 5));
     GPIOA->AFR[1] &= ~(0xF << (4 * 7));
 
-    // Disable SPI1 peripheral to be able to set it up
+    // Disable SPI2 peripheral to be able to set it up
     SPI1->CR1 &= ~SPI_CR1_SPE;
 
     // Set Baud rate to slowest possible (frequency of CLK / 256)
@@ -30,44 +31,45 @@ void init_spi1() {
 
     // Need to avoid setting to 0 then OR-ing causes the value
     // to instead to be set to 8-bit data size then OR-ed; this is because 
-    // of not used values; setting value to 16-bit data size
+    // of not used values; configured to 16 bits (this makes OR-ing ok, but
+    // still not general method)
     SPI1->CR2 |= SPI_CR2_DS;
 
-    // set SPI1 to master mode
+    // set SPI2 to master mode
     SPI1->CR1 |= SPI_CR1_MSTR;
 
     // Set up output
     SPI1->CR2 |= SPI_CR2_SSOE;
     
-    // set SPI1 to have NSS pulse management enabled
+    // set SPI2 to have NSS pulse management enabled
     // "generate an NSS pulse between two consecutive data when doing continuous transfers" 
     SPI1->CR2 |= SPI_CR2_NSSP;
 
     // enables DMA transfers on empty transmission buffer 
-    SPI1->CR2 |= SPI_CR2_TXDMAEN;    
+    SPI1->CR2 |= SPI_CR2_TXDMAEN;
 
-    // Reenable SPI1 peripheral
+    // Reenable SPI2 peripheral
     SPI1->CR1 |= SPI_CR1_SPE;
 }
 
 void spi1_setup_dma(void) {
-    // enable DMA1 in RCC
+    // Enable RCC (clock) for DMA1
     RCC->AHBENR |= RCC_AHBENR_DMA1EN;
 
-    // Choose DMA1 Channel 3 as it contains the TX (transmission) of SPI1
-    // Set the memory address to be read from as display
-    DMA1_Channel3->CMAR = (uint32_t) display;
+    // Channel 5 selected as it contains TIM15
+    // Set CMAR (other pair of address) to the address of the msg array 
+    DMA1_Channel3->CMAR = (uint32_t) (display);
 
-    // Set the peripheral address to SPI1's data register
-    DMA1_Channel3->CPAR = (uint32_t) &(SPI1->DR);
-    
-    // Set the number of data register to be 8 (8 'packets' to be sent)
-    DMA1_Channel3->CNDTR = MSG_LENGTH;
+    // Set CPAR (peripheral address) to the address of the SPI2->DR register
+    DMA1_Channel3->CPAR = (uint32_t) (&(SPI1->DR));
+
+    // Set CNDTR to 8. (the amount of LEDs and the number of elements being transfered between the addresses)
+    DMA1_Channel3->CNDTR = 8;
 
     // Set the DIRection for copying from-memory-to-peripheral (read from memory, 1)
     DMA1_Channel3->CCR |= DMA_CCR_DIR;
 
-    // Set the MINC to increment the CMAR for every transfer. (Each LED will have something different, enabled = 1)
+    // Set the MINC to increment the CMAR for every transfer. (Each LED will have something different on it, enabled = 1)
     DMA1_Channel3->CCR |= DMA_CCR_MINC;
 
     // Set the MSIZE (memory size) to 16-bit (01)
@@ -84,12 +86,12 @@ void spi1_setup_dma(void) {
     // enables DMA transfers on empty transmission buffer, should be fine to have twice 
     SPI1->CR2 |= SPI_CR2_TXDMAEN;
 
-    // enable DMA
-    DMA1_Channel3->CCR |= DMA_CCR_EN;
+    // Do not enable DMA in the same function!!! 
 }
 
 void set_message(char* msg)
 {
+    uint16_t temp_array[MSG_LENGTH] = {0x0000,0x0100,0x0200,0x0300,0x0400,0x0500,0x0600,0x0700};
     int i = 0;
     for (i = 0; i < MSG_LENGTH; i++)
     {
@@ -99,14 +101,19 @@ void set_message(char* msg)
         }
         else
         {
-            display[i] = font[(int) msg[i]];
+            display[i] = temp_array[i] | font[(int) msg[i]];
         }
     }
     while (i < MSG_LENGTH)
     {
-        display[i] = font[(int)' '];
+        display[i] = temp_array[i] | font[(int)' '];
         i++;
     }
+}
+
+void spi1_enable_dma(void) {
+    // Enable DMA1 (1)
+    DMA1_Channel3->CCR |= DMA_CCR_EN;
 }
 
 void init_7_segment_display()
@@ -114,4 +121,5 @@ void init_7_segment_display()
     set_message(" ");
     init_spi1();
     spi1_setup_dma();
+    spi1_enable_dma();
 }

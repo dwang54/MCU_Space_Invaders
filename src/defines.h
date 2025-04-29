@@ -116,4 +116,5 @@ void set_message(char* msg);
 // do not call these:
 void init_spi1();
 void spi1_setup_dma();
+void spi1_enable_dma();
 #endif
