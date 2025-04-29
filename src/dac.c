@@ -481,7 +481,6 @@ void init_sound_effects(void)
     sfx_1.len = shoot_raw_len;
 
     // sfx for invader death
-    sfx sfx_2;
     sfx_2.sound_wave = invaderkilled_raw;            
     sfx_2.id = ENEMY_DIE_SID;
     sfx_2.len = invaderkilled_raw_len;
@@ -542,6 +541,11 @@ void init_tim6(void) {
     NVIC_EnableIRQ(TIM6_IRQn);
     TIM6 -> CR1 |= TIM_CR1_CEN;
     //NVIC_SetPriority(TIM6_IRQn, 2);
+}
+
+void set_volume(uint32_t new_volume)
+{
+    volume_dac = new_volume;
 }
 
 void play_sfx(S_ID sfx_id) {

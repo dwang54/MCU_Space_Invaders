@@ -125,6 +125,7 @@ int __io_putchar(int c);
 void init_sound_effects(); // do this first prior to using audio output!
 void init_audio_output();
 void TIM6_DAC_IRQHandler();
+void set_volume(uint32_t new_volume);
 void play_sfx(S_ID sfx_id);
 // don't use these functions/variables!
 void setup_dac();

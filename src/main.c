@@ -427,15 +427,14 @@ int main()
     setup_adc();
     init_tim2();
 
-    //set up dac
-    setup_dac();
-    init_tim6();
-
+    init_7_segment_display();
+    set_message("HELLO");
+    
     printf("PRE-SOUND\n");
     init_sound_effects();
     init_audio_output();
     nano_wait(1000000000);
-    play_sfx(ENEMY_DIE_SID);
+    play_sfx(PLAYER_DEATH_SID);
     printf("SOUND EFFECT 1\n");
 
     /*
