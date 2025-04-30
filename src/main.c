@@ -329,6 +329,7 @@ void player_shoot(player* p, laser* l) {
   printf("shoot!\n");
   l->alive = 1;
   l->s.position = p->s.position;
+  play_sfx(LASER_SHOOT_SID);
   // *l = (laser) {
   //   .alive = 1,
   //   .s = (sprite) {

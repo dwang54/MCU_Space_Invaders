@@ -40,6 +40,7 @@ void TIM2_IRQHandler() {
     bcn += 1;
     if (bcn >= BCSIZE) bcn = 0;
     volume_adc = bcsum / BCSIZE; 
+    set_volume(volume_adc);
 }
 
 //============================================================================
