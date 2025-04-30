@@ -517,7 +517,10 @@ void TIM6_DAC_IRQHandler(void) {
     // experimental
     offset0 += step0;
     if (offset0 >= ((current_sfx -> len))) {
-        offset0 -= (current_sfx -> len);
+        // offset0 -= (current_sfx -> len);
+        offset0 = 0;
+        current_sfx = NULL;
+        return;
     }
 
     int samp = (current_sfx -> sound_wave)[offset0];
