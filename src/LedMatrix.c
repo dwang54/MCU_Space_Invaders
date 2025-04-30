@@ -53,11 +53,11 @@ void init_display()
 
     // may not be totally necessary
     // set up alternative function mode for B14 (10)
-    GPIOB->MODER &= ~(0x3 << 28);
-    GPIOB->MODER |= 0x2 << 28;
+    // GPIOB->MODER &= ~(0x3 << 28);
+    // GPIOB->MODER |= 0x2 << 28;
     // select in the high alternative function register for B14: TIM15_CH1 (AF1) (0001)
-    GPIOB->AFR[1] &= ~(0xF << 24);
-    GPIOB->AFR[1] |= 0x1 << 24;
+    // GPIOB->AFR[1] &= ~(0xF << 24);
+    // GPIOB->AFR[1] |= 0x1 << 24;
 
     // code modified from Lab 4
     // Enable RCC (clock) for DMA1

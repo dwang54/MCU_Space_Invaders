@@ -1,7 +1,7 @@
 #include "defines.h"
 
 // useful for passing information to various sections, though this may require more thought, need history for game needs
-volatile char last_char_pressed = '0';
+volatile char last_char_pressed = '\0';
 
 // same control structure as part 2
 volatile int current_col = 1;
@@ -11,6 +11,11 @@ const char key_map[4][4] = {{'1', '4', '7', '*'},
                             {'2', '5', '8', '0'},
                             {'3', '6', '9', '#'},
                             {'A', 'B', 'C', 'D'}};
+
+char get_last_pressed_char()
+{
+    return last_char_pressed;
+}
 
 // set up keyboard for use
 void init_keypad()
@@ -71,6 +76,10 @@ void SysTick_Handler()
     {
         last_char_pressed = key_map[current_col - 1][4 - pressed_row];
         // an idea could be to invoke some sort of function response
+    }
+    else
+    {
+        last_char_pressed = '\0';
     }
 
     // every invocation of SysTick_Handler changes the col that is powered

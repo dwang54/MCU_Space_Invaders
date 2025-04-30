@@ -24,10 +24,10 @@ graphic enemy_graphic = (graphic) {
 
 graphic player_graphic = (graphic) {
     .graphic_array = {
-        { 0x0300FF00, 0x0300FF00, 0x0300FF00, 0x0300FF00 },
-        { 0x0300FF00, 0x0300FF00, 0x0300FF00, 0x0300FF00 },
-        { 0x0300FF00, 0x0300FF00, 0x0300FF00, 0x0300FF00 },
-        { 0x0300FF00, 0x0300FF00, 0x0300FF00, 0x0300FF00 }
+        { 0x0300FFFF, 0x0300FFFF, 0x0300FF00, 0x0300FF00 },
+        { 0x0300FF00, 0x0300FFFF, 0x0300FF00, 0x0300FF00 },
+        { 0x0300FFFF, 0x0300FFFF, 0x0300FF00, 0x0300FF00 },
+        { 0x0300FFFF, 0x0300FF00, 0x0300FF00, 0x0300FF00 }
     },
     .w = 4,
     .h = 4,
@@ -36,10 +36,10 @@ graphic player_graphic = (graphic) {
 
 graphic laser_graphic = (graphic) {
     .graphic_array = {
-        { 0x00FF0000 },
-        { 0x00FF0000 }
+        { 0, 0x00FF00FF, 0x00FF00FF },
+        { 0, 0x00FF00FF, 0x00FF00FF }
     },
-    .w = 1,
+    .w = 3,
     .h = 2,
     .z_level = 2
 };
