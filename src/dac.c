@@ -466,7 +466,6 @@ sfx sfx_3; // sfx for player death
 int step0 = 1;
 int offset0 = 0;
 
-
 void init_audio_output(void)
 {
     setup_dac();
@@ -481,7 +480,6 @@ void init_sound_effects(void)
     sfx_1.len = shoot_raw_len;
 
     // sfx for invader death
-    sfx sfx_2;
     sfx_2.sound_wave = invaderkilled_raw;            
     sfx_2.id = ENEMY_DIE_SID;
     sfx_2.len = invaderkilled_raw_len;
@@ -516,16 +514,15 @@ void TIM6_DAC_IRQHandler(void) {
         return;
     } 
 
+    // experimental
     offset0 += step0;
-    if (offset0 >= ((current_sfx -> len) << 16)) {
-        offset0 -= ((current_sfx -> len) << 16);
+    if (offset0 >= ((current_sfx -> len))) {
+        offset0 -= (current_sfx -> len);
     }
 
-
-    int samp = current_sfx -> sound_wave[offset0 >> 16];
+    int samp = (current_sfx -> sound_wave)[offset0];
     samp *= volume_dac;
-    samp = samp >> 17;
-    samp += 2048;
+    samp = samp >> 8;
     DAC -> DHR12R1 = samp;
 }
 
@@ -542,6 +539,11 @@ void init_tim6(void) {
     NVIC_EnableIRQ(TIM6_IRQn);
     TIM6 -> CR1 |= TIM_CR1_CEN;
     //NVIC_SetPriority(TIM6_IRQn, 2);
+}
+
+void set_volume(uint32_t new_volume)
+{
+    volume_dac = new_volume;
 }
 
 void play_sfx(S_ID sfx_id) {
