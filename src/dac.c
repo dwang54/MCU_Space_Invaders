@@ -466,7 +466,6 @@ sfx sfx_3; // sfx for player death
 int step0 = 1;
 int offset0 = 0;
 
-
 void init_audio_output(void)
 {
     setup_dac();
@@ -515,16 +514,15 @@ void TIM6_DAC_IRQHandler(void) {
         return;
     } 
 
+    // experimental
     offset0 += step0;
-    if (offset0 >= ((current_sfx -> len) << 16)) {
-        offset0 -= ((current_sfx -> len) << 16);
+    if (offset0 >= ((current_sfx -> len))) {
+        offset0 -= (current_sfx -> len);
     }
 
-
-    int samp = current_sfx -> sound_wave[offset0 >> 16];
+    int samp = (current_sfx -> sound_wave)[offset0];
     samp *= volume_dac;
-    samp = samp >> 17;
-    samp += 2048;
+    samp = samp >> 8;
     DAC -> DHR12R1 = samp;
 }
 

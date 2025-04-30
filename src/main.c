@@ -418,7 +418,8 @@ int main()
     // begin_game();
 
     draw_rectangle(1, 1, 1, 16, 32, 8, 8);
-    
+    draw_pixel(1, 0, 0, 0, 0);
+
     // get rid of buffers for printing
     setbuf(stdin,0); 
     setbuf(stdout,0);
@@ -430,20 +431,16 @@ int main()
     init_7_segment_display();
     set_message("HELLO");
     
-    printf("PRE-SOUND\n");
     init_sound_effects();
     init_audio_output();
-    nano_wait(1000000000);
     play_sfx(PLAYER_DEATH_SID);
     printf("SOUND EFFECT 1\n");
 
-    /*
     for (int i = 0; i < 5; i++)
     {
         nano_wait(1000000000);
         printf("%d\n", get_volume());
     }
-    */
 
     // let interrupts run the rest of the program
     for(;;) 
