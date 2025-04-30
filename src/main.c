@@ -1,6 +1,4 @@
 #include "defines.h"
-
-#include "defines.h"
 #include <stddef.h>
 #include <time.h>
 
@@ -99,19 +97,22 @@ void loop() {
         p.s.velocity.x = 1;
         break;
       case 'B': // move left!s
+        p.s.velocity = 0;
+        break;
+      case 'C': // move left
         p.s.velocity.x = -1;
         break;
 #if TEST_LASER
-      case 'C': // SHOOT
+      case 'D': // SHOOT
         if (p.last_shot <= p.cooldown + time(NULL)) {
           player_shoot(&p, &l);
         }
         break;
 #endif
-      case 'D': // prime the quit
+      case 'E': // prime the quit
         quit_time = time(NULL);
         break;
-      case 'E': // actually quit
+      case 'F': // actually quit
         if (quit_time + 5 <= time(NULL)) // within 5 seconds of priming, quit game
           goto end_game_goto;
         else
@@ -212,8 +213,8 @@ void begin_game() {
     loop();
 #endif
 }
-/*
-// May be too hard? Unless Taviish can find way to make usernames and integers a graphic to display!
+
+
 void go_leaderboard() {
     sprite leaderboard = (sprite) {
       .graphic = load_graphic(LEADERBOARD_GID),
@@ -232,7 +233,7 @@ void go_leaderboard() {
             break;
         }
     }
-}*/
+}
 
 void end_game() {
 #if TEST_END_MENU
@@ -259,7 +260,7 @@ void end_game() {
   return;
 #endif
 }
-/*
+
 player new_player() {
   return (player) {
     .curr_health = 3,
@@ -272,9 +273,8 @@ player new_player() {
       .id = PLAYER_EID
     }
   };
-}*/
+}
 
-/*
 void spawn_wave(enemy* enemy_arr, int row) {
   for (size_t i = 0; i < ENEMY_COLS; ++i) {
     enemy_arr[i] = (enemy) {
@@ -287,7 +287,7 @@ void spawn_wave(enemy* enemy_arr, int row) {
       }
     };
   }
-}*/
+}
 
 // Apply velocity to sprite's position
 void move_sprite(sprite* s, int* hit_wall_flag) {
@@ -305,7 +305,7 @@ void move_sprite(sprite* s, int* hit_wall_flag) {
     *hit_wall_flag = 0;
 }
 
-/*
+
 void player_shoot(player* p, laser* l) {
   *l = (laser) {
     .alive = 1,
@@ -316,7 +316,7 @@ void player_shoot(player* p, laser* l) {
       .id = LASER_EID
     }
   };
-}*/
+}
 
 void clear_world() {
   for (size_t i = 0; i < LCD_HEIGHT; ++i) {
@@ -358,7 +358,6 @@ void display_world() {
 }
 
 void check_laser_hit(laser* l, enemy enemies[ENEMY_ROWS][ENEMY_COLS]) {
-
   if (!l->alive)
     return;
 

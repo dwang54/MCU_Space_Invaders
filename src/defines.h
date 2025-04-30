@@ -46,7 +46,6 @@ typedef enum _DIRECTION {
 
 typedef enum _G_ID { // Graphic ID
     MAINMENU_GID,
-    ASTEROID_SID,
     ENEMY_GID,
     LASER_GID,
     PLAYER_GID,
@@ -79,7 +78,6 @@ typedef struct _graphic {
     uint8_t w;                                      // width
     uint8_t h;                                      // height
     uint8_t z_level;                                // higher z level lets you get placed over other graphics when overlapping    
-    struct _graphic* next;                          // linked list of graphics
 } graphic;
 
 typedef struct _sprite {
@@ -140,6 +138,10 @@ void TIM2_IRQHandler();
 // from spidisplay.c 
 void init_7_segment_display();
 void set_message(char* msg);
+
+// from SDcard.c
+graphic* load_graphic(G_ID id);
+
 // do not call these:
 void init_spi1();
 void spi1_setup_dma();

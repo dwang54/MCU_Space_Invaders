@@ -10,8 +10,50 @@ Needed by any files: Yes; will call load functions at beginning of game loop; fo
 
 #include "defines.h"
 
-/*
+graphic enemy_graphic = (graphic) {
+    .graphic_array = {
+        { 0x01FF0000, 0x01FF0000, 0x01FF0000, 0x01FF0000 },
+        { 0x01FF0000, 0x01FF0000, 0x01FF0000, 0x01FF0000 },
+        { 0x01FF0000, 0x01FF0000, 0x01FF0000, 0x01FF0000 },
+        { 0x01FF0000, 0x01FF0000, 0x01FF0000, 0x01FF0000 }
+    },
+    .w = 4,
+    .h = 4,
+    .z_level = 1,
+};
+
+graphic player_graphic = (graphic) {
+    .graphic_array = {
+        { 0x0300FF00, 0x0300FF00, 0x0300FF00, 0x0300FF00 },
+        { 0x0300FF00, 0x0300FF00, 0x0300FF00, 0x0300FF00 },
+        { 0x0300FF00, 0x0300FF00, 0x0300FF00, 0x0300FF00 },
+        { 0x0300FF00, 0x0300FF00, 0x0300FF00, 0x0300FF00 }
+    },
+    .w = 4,
+    .h = 4,
+    .z_level = 3,
+};
+
+graphic laser_graphic = (graphic) {
+    .graphic_array = {
+        { 0x00FF0000 },
+        { 0x00FF0000 }
+    },
+    .w = 1,
+    .h = 2,
+    .z_level = 2
+};
+
 graphic* load_graphic(G_ID g_id) {
     // can use in load_all_graphics
-    
-}*/
+    switch (g_id) {
+        case ENEMY_GID:
+            return &enemy_graphic;
+        case PLAYER_GID:
+            return &player_graphic;
+        case LASER_GID:
+            return &laser_graphic;
+        default:
+            return NULL;
+    }
+}
