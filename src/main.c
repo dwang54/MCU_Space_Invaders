@@ -2,8 +2,6 @@
 #include <stddef.h>
 #include <time.h>
 
-#include "SDcard.c"
-
 #define STARTING_X 5
 #define STARTING_Y 0
 #define STARTING_ENEMY_HEALTH 1
