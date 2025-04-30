@@ -59,8 +59,8 @@ int furthest_right = 0;
 int furthest_bottom = 0;
 int move_down_flag = 0;
 
-#define TEST_PLAYER 0
-#define TEST_INPUT 0
+#define TEST_PLAYER 1
+#define TEST_INPUT 1
 #define TEST_LASER 0
 #define TEST_ENEMIES 0
 #define TEST_MAINMENU 0
@@ -68,6 +68,7 @@ int move_down_flag = 0;
 
 // game loop running each frame
 void loop() {
+  set_message("Looping");
 #if TEST_PLAYER
   // settup
   player p = new_player();
@@ -96,8 +97,8 @@ void loop() {
       case 'A': // move right!
         p.s.velocity.x = 1;
         break;
-      case 'B': // move left!s
-        p.s.velocity = 0;
+      case 'B': // stop movement
+        p.s.velocity = Vec2d_ZERO;
         break;
       case 'C': // move left
         p.s.velocity.x = -1;
@@ -185,6 +186,8 @@ end_game_goto:
 */
 void begin_game() {
 #if TEST_MAINMENU
+    set_message("BEGIN");
+
     sprite main_menu = (sprite) {
       .graphic = load_graphic(MAINMENU_GID),
       .position = Vec2d_ZERO,
@@ -428,18 +431,15 @@ int main()
     init_tim2();
 
     init_7_segment_display();
-    set_message("HELLO");
+    set_message("Initiatalzing");
     
     init_sound_effects();
     init_audio_output();
-    play_sfx(PLAYER_DEATH_SID);
-    printf("SOUND EFFECT 1\n");
 
-    for (int i = 0; i < 5; i++)
-    {
-        nano_wait(1000000000);
-        printf("%d\n", get_volume());
-    }
+    begin_game();
+
+
+
 
     // let interrupts run the rest of the program
     for(;;) 
