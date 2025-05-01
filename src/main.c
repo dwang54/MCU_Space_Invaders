@@ -60,6 +60,14 @@ int move_down_flag = 0;
 #define TEST_MAINMENU 0
 #define TEST_END_MENU 0
 
+int min(int num1, int num2) {
+  return num1 < num2 ? num1 : num2;
+}
+
+int max(int num1, int num2) {
+  return num1 > num2 ? num1 : num2;
+}
+
 // game loop running each frame
 void loop() {
   set_message("Looping");
@@ -95,6 +103,7 @@ void loop() {
   // begin game!
 #if TEST_INPUT
   for (;;) {
+    furthest_bottom = LCD_HEIGHT;
     p.s.velocity.x = 0;
     switch(get_last_pressed_char()) {
       case 'A': // move right!
@@ -152,16 +161,25 @@ void loop() {
 #if TEST_ENEMIES
 #endif
 
+    furthest_left = INT8_MAX;
+    furthest_right = INT16_MIN;
+
     // moving enemies and adding graphics to world in one loop
     for (int i = 0; i < ENEMY_ROWS; ++i) {
       for (int j = 0; j < ENEMY_COLS; ++j) {
         if (enemies[i][j].curr_health <= 0) 
           continue;
-        enemies[i][j].s.velocity = (Vec2d) { .x = enemy_velocity_x, move_down_flag * -ENEMY_SPEED };
-        // move_sprite(&enemies[i][j].s, &hit_wall_flag);
+        enemies[i][j].s.velocity = (Vec2d) { .x = enemy_velocity_x, -move_down_flag * ENEMY_SPEED };
+        move_sprite(&enemies[i][j].s, &hit_wall_flag);
+        furthest_left = min(enemies[i][j].s.position.x, furthest_left);
+        furthest_right = max(enemies[i][j].s.position.x, furthest_right);
+        furthest_bottom = min(enemies[i][j].s.position.y, furthest_bottom);
         add_to_world(&enemies[i][j].s);
       }
     }
+
+    
+    
 #if TEST_ENEMIES
 #endif
 
@@ -177,16 +195,19 @@ void loop() {
 
 
     // if all enemies are defeated, go to next round
-#if TEST_ENEMIES && TEST_LASER
-    if (is_wave_beat()) {
-      next_round(&p, &l);
-    } else if (enemies_reach_bottom(enemies)) {
+    // if (is_wave_beat()) {
+    //   printf("you beat the wave!\n");
+    //   next_round(&p, &l);
+    // } 
+    if (enemies_reach_bottom(enemies)) {
+      printf("reached bottom\n");
       goto end_game_goto;
-      break;
     }
-#endif
+
+
   }
 end_game_goto:
+  printf("ending the game\n");
   end_game();
 #endif
   return;
@@ -302,7 +323,7 @@ void spawn_wave(enemy* enemy_arr, int row) {
       .curr_health = 3,
       .s = (sprite) {
         .graphic = enemy_graphic,
-        .position = (Vec2d) { (i * (enemy_graphic->w + space_between)) + padding_to_side, (row * (enemy_graphic->h + space_between)) + padding_to_side },
+        .position = (Vec2d) { (i * (enemy_graphic->w + space_between)) + padding_to_side, LCD_HEIGHT - (row * (enemy_graphic->h + space_between)) - padding_to_side },
         .velocity = (Vec2d) { .x =  ENEMY_SPEED, .y = 0 },
         .id = ENEMY_EID
       }
@@ -393,7 +414,6 @@ int is_collision(sprite* s1, sprite* s2) {
       s1->position.x + s1->graphic->w > s2->position.x &&
       s1->position.y < s2->position.y + s2->graphic->h &&
       s1->position.y + s1->graphic->h > s2->position.y ) {
-      printf("collision!");
       return 1;
   }
   return 0;
@@ -409,11 +429,9 @@ void check_laser_hit(laser* l, enemy enemies[ENEMY_ROWS][ENEMY_COLS]) {
       if (curr_enemy->curr_health <= 0) 
         continue;
       if (is_collision(&(l->s), &(curr_enemy->s)) != 0) {
-        printf("we colliding!\n");
         curr_enemy->curr_health--;
         if (curr_enemy->curr_health == 0) {
           curr_hit++;
-          printf("one more died: %d\n", curr_hit);
         }
         l->alive = 0;
         return;
@@ -440,10 +458,10 @@ void check_laser_hit(laser* l, enemy enemies[ENEMY_ROWS][ENEMY_COLS]) {
 }
 
 void check_enemy_on_wall(enemy enemies[ENEMY_ROWS][ENEMY_COLS]) {
-  if (furthest_left <= 10) {
+  if (furthest_left <= 2) {
     move_down_flag = 1;
     enemy_velocity_x = ENEMY_SPEED;  // make direction to the right
-  } else if (furthest_right >= LCD_WIDTH - 10) {
+  } else if (furthest_right >= LCD_WIDTH - 6) {
     move_down_flag = 1;
     enemy_velocity_x = -ENEMY_SPEED; // make direction to the left
   } else {
