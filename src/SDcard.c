@@ -12,10 +12,10 @@ Needed by any files: Yes; will call load functions at beginning of game loop; fo
 
 graphic enemy_graphic = (graphic) {
     .graphic_array = {
-        { 0x01FF0000, 0x01FF0000, 0x01FF0000, 0x01FF0000 },
-        { 0x01FF0000, 0x01FF0000, 0x01FF0000, 0x01FF0000 },
-        { 0x01FF0000, 0x01FF0000, 0x01FF0000, 0x01FF0000 },
-        { 0x01FF0000, 0x01FF0000, 0x01FF0000, 0x01FF0000 }
+        { 0x02FF0000, 0x02FF0000, 0x02FF0000, 0x02FF0000 },
+        { 0x02FF0000, 0x02FF0000, 0x02FF0000, 0x02FF0000 },
+        { 0x02FF0000, 0x02FF0000, 0x02FF0000, 0x02FF0000 },
+        { 0x02FF0000, 0x02FF0000, 0x02FF0000, 0x02FF0000 }
     },
     .w = 4,
     .h = 4,
@@ -36,8 +36,8 @@ graphic player_graphic = (graphic) {
 
 graphic laser_graphic = (graphic) {
     .graphic_array = {
-        { 0, 0x00FF00FF, 0x00FF00FF },
-        { 0, 0x00FF00FF, 0x00FF00FF }
+        { 0, 0x01FF00FF, 0x01FF00FF },
+        { 0, 0x01FF00FF, 0x01FF00FF }
     },
     .w = 3,
     .h = 2,

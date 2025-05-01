@@ -27,14 +27,13 @@ void spawn_wave(enemy* enemy_arr, int row); // do it this way to avoid using the
 void move_sprite(sprite* s, int* hit_wall_flag);
 void player_shoot(player* p, laser* l);
 
-void clear_world();
+void clear_world(uint32_t color);
 void add_to_world(sprite* s);
 void display_world();
 
 // collision detection
 void check_laser_hit(laser* l, enemy enemies[ENEMY_ROWS][ENEMY_COLS]);
 void check_enemy_on_wall(enemy enemies[ENEMY_ROWS][ENEMY_COLS]);
-void check_player_on_wall(player* p);
 
 int is_wave_beat();
 void next_round(player* p, laser* l);
@@ -56,8 +55,8 @@ int move_down_flag = 0;
 
 #define TEST_PLAYER 1
 #define TEST_INPUT 1
-#define TEST_LASER 0
-#define TEST_ENEMIES 0
+#define TEST_LASER 1
+#define TEST_ENEMIES 1
 #define TEST_MAINMENU 0
 #define TEST_END_MENU 0
 
@@ -137,7 +136,8 @@ void loop() {
         l.alive = 0;
       }
     }
-  #if TEST_LASER
+
+#if TEST_LASER
 #endif
 
     // collision checking
@@ -147,15 +147,16 @@ void loop() {
     if (l.alive == 1)
       check_laser_hit(&l, enemies);
 #endif
+
 #if TEST_ENEMIES
     check_enemy_on_wall(enemies);
 #endif
-    // check_player_on_wall(&p);
 
     // moving enemies and adding graphics to world in one loop
 #if TEST_ENEMIES
     for (int i = 0; i < ENEMY_ROWS; ++i) {
       for (int j = 0; j < ENEMY_COLS; ++j) {
+        enemies[i][j].s.velocity = (Vec2d) { .x = enemy_velocity_x, move_down_flag * -ENEMY_SPEED };
         move_sprite(&enemies[i][j].s, &hit_wall_flag);
         add_to_world(&enemies[i][j].s);
       }
@@ -291,13 +292,16 @@ player new_player() {
 }
 
 void spawn_wave(enemy* enemy_arr, int row) {
+  graphic* enemy_graphic = load_graphic(ENEMY_GID);
+  const int space_between = 4;
+  const int padding_to_side = 8;
   for (size_t i = 0; i < ENEMY_COLS; ++i) {
     enemy_arr[i] = (enemy) {
       .curr_health = 3,
       .s = (sprite) {
-        .graphic = load_graphic(ENEMY_GID),
-        .position = (Vec2d) { i, row },
-        .velocity = Vec2d_ZERO,
+        .graphic = enemy_graphic,
+        .position = (Vec2d) { (i * enemy_graphic->w) + padding_to_side + space_between, (row * enemy_graphic->h) + padding_to_side + space_between },
+        .velocity = (Vec2d) { .x =  ENEMY_SPEED, .y = 0 },
         .id = ENEMY_EID
       }
     };
