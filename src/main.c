@@ -108,7 +108,7 @@ void loop() {
         p.s.velocity.x = -1;
         break;
       case 'D': // SHOOT
-        if (p.last_shot <= p.cooldown + time(NULL)) {
+        if (!l.alive || p.last_shot <= p.cooldown + time(NULL)) {
           player_shoot(&p, &l);
         }
         break;
@@ -132,8 +132,10 @@ void loop() {
     move_sprite(&p.s, &hit_wall_flag);
     
     if (l.alive == 1) {
-      printf("l is alive!\n");
       move_sprite(&l.s, &hit_wall_flag);
+      if (hit_wall_flag == 1) {
+        l.alive = 0;
+      }
     }
   #if TEST_LASER
 #endif
@@ -316,7 +318,7 @@ void move_sprite(sprite* s, int* hit_wall_flag) {
     s->position.x -= s->velocity.x;
   } else if (s->position.y >= LCD_HEIGHT || s->position.y < 0) {
     *hit_wall_flag = 1;
-    s->position.y -= s->position.y;
+    s->position.y -= s->velocity.y;
   }
   else 
     *hit_wall_flag = 0;
@@ -329,6 +331,7 @@ void player_shoot(player* p, laser* l) {
   printf("shoot!\n");
   l->alive = 1;
   l->s.position = p->s.position;
+  p->last_shot = time(NULL);
   play_sfx(LASER_SHOOT_SID);
   // *l = (laser) {
   //   .alive = 1,
@@ -342,10 +345,10 @@ void player_shoot(player* p, laser* l) {
   // };
 }
 
-void clear_world() {
+void clear_world(uint32_t clear_color) {
   for (size_t i = 0; i < LCD_HEIGHT; ++i) {
     for (size_t j = 0; j < LCD_WIDTH; ++j) {
-      world_graphic[i][j] = 0;
+      world_graphic[i][j] = clear_color;
     }
   }
 }
@@ -381,7 +384,7 @@ void display_world() {
 
   // after displaying, clear world for next display
   // for better optimizations, would ideally keep the same display from pervious cycle and simply manipulate it
-  clear_world();
+  clear_world(0x00FFFFFF);
 }
 
 void check_laser_hit(laser* l, enemy enemies[ENEMY_ROWS][ENEMY_COLS]) {
