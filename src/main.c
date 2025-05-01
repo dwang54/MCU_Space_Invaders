@@ -56,7 +56,7 @@ int move_down_flag = 0;
 #define TEST_PLAYER 1
 #define TEST_INPUT 1
 #define TEST_LASER 1
-#define TEST_ENEMIES 1
+#define TEST_ENEMIES 0
 #define TEST_MAINMENU 0
 #define TEST_END_MENU 0
 
@@ -85,11 +85,11 @@ void loop() {
   int hit_wall_flag;
 
   // creating enemies!
-#if TEST_ENEMIES
   enemy enemies[ENEMY_ROWS][ENEMY_COLS];
   for (int i = 0; i < ENEMY_ROWS; ++i) {
     spawn_wave(enemies[i], i);
   }
+#if TEST_ENEMIES
 #endif
 
   // begin game!
@@ -143,24 +143,26 @@ void loop() {
     // collision checking
     // move laser and check if it hits before even moving enemies
 
-#if TEST_ENEMIES && TEST_LASER
     if (l.alive == 1)
       check_laser_hit(&l, enemies);
+#if TEST_ENEMIES && TEST_LASER
 #endif
 
-#if TEST_ENEMIES
     check_enemy_on_wall(enemies);
+#if TEST_ENEMIES
 #endif
 
     // moving enemies and adding graphics to world in one loop
-#if TEST_ENEMIES
     for (int i = 0; i < ENEMY_ROWS; ++i) {
       for (int j = 0; j < ENEMY_COLS; ++j) {
+        if (enemies[i][j].curr_health <= 0) 
+          continue;
         enemies[i][j].s.velocity = (Vec2d) { .x = enemy_velocity_x, move_down_flag * -ENEMY_SPEED };
-        move_sprite(&enemies[i][j].s, &hit_wall_flag);
+        // move_sprite(&enemies[i][j].s, &hit_wall_flag);
         add_to_world(&enemies[i][j].s);
       }
     }
+#if TEST_ENEMIES
 #endif
 
     // adding the graphics to the world array
@@ -300,7 +302,7 @@ void spawn_wave(enemy* enemy_arr, int row) {
       .curr_health = 3,
       .s = (sprite) {
         .graphic = enemy_graphic,
-        .position = (Vec2d) { (i * enemy_graphic->w) + padding_to_side + space_between, (row * enemy_graphic->h) + padding_to_side + space_between },
+        .position = (Vec2d) { (i * (enemy_graphic->w + space_between)) + padding_to_side, (row * (enemy_graphic->h + space_between)) + padding_to_side },
         .velocity = (Vec2d) { .x =  ENEMY_SPEED, .y = 0 },
         .id = ENEMY_EID
       }
@@ -312,11 +314,6 @@ void spawn_wave(enemy* enemy_arr, int row) {
 void move_sprite(sprite* s, int* hit_wall_flag) {
   s->position.x += s->velocity.x;
   s->position.y += s->velocity.y;
-  if (s->id == LASER_EID) {
-    printf("Laser pos %d %d\n", s->position.x, s->position.y);
-    printf("Laser vel %d %d\n", s->velocity.x, s->velocity.y);
-    printf("Id of sprite: %d\n", s->id);
-  }
   if (s->position.x + s->graphic->w >= LCD_WIDTH + 1 || s->position.x < 0) {
     *hit_wall_flag = 1;
     s->position.x -= s->velocity.x;
@@ -391,26 +388,55 @@ void display_world() {
   clear_world(0x00FFFFFF);
 }
 
+int is_collision(sprite* s1, sprite* s2) {
+  if (s1->position.x < s2->position.x + s2->graphic->w &&
+      s1->position.x + s1->graphic->w > s2->position.x &&
+      s1->position.y < s2->position.y + s2->graphic->h &&
+      s1->position.y + s1->graphic->h > s2->position.y ) {
+      printf("collision!");
+      return 1;
+  }
+  return 0;
+}
+
 void check_laser_hit(laser* l, enemy enemies[ENEMY_ROWS][ENEMY_COLS]) {
   if (!l->alive)
     return;
 
-  for (size_t i = 0; i < ENEMY_ROWS; ++i) {
-    for (size_t j = 0; j < ENEMY_ROWS; ++j) {
-      enemy* curr_enemy = &enemies[i][j];
+  for (size_t col = 0; col < ENEMY_COLS; ++col) {
+    for (int row = ENEMY_ROWS - 1; row >= 0; --row) {
+      enemy* curr_enemy = &enemies[row][col];
       if (curr_enemy->curr_health <= 0) 
         continue;
-      // check colission again
-      if ((curr_enemy->s.position.x >= l->s.position.x && curr_enemy->s.position.x <= l->s.position.x + curr_enemy->s.graphic->w) &&
-      (curr_enemy->s.position.y >= l->s.position.y && curr_enemy->s.position.y <= l->s.position.y + curr_enemy->s.graphic->h)) {
+      if (is_collision(&(l->s), &(curr_enemy->s)) != 0) {
+        printf("we colliding!\n");
         curr_enemy->curr_health--;
-        if (curr_enemy->curr_health == 0)
+        if (curr_enemy->curr_health == 0) {
           curr_hit++;
+          printf("one more died: %d\n", curr_hit);
+        }
         l->alive = 0;
         return;
       }
     }
   }
+
+  // for (size_t i = 0; i < ENEMY_ROWS; ++i) {
+  //   for (size_t j = 0; j < ENEMY_COLS; ++j) {
+  //     enemy* curr_enemy = &enemies[i][j];
+  //     if (curr_enemy->curr_health <= 0) 
+  //       continue;
+  //     // check colission again
+  //     if (is_collision(l, curr_enemy)) {
+  //       printf("HIT\n");
+  //       curr_enemy->curr_health--;
+  //       if (curr_enemy->curr_health == 0)
+  //         curr_hit++;
+  //       l->alive = 0;
+  //       return;
+  //     }
+  //   }
+  // }
 }
 
 void check_enemy_on_wall(enemy enemies[ENEMY_ROWS][ENEMY_COLS]) {

@@ -38,7 +38,7 @@ typedef struct _sound_effect {
 
 // of currently unknown usage
 #define ENEMY_ROWS 3
-#define ENEMY_COLS 4
+#define ENEMY_COLS 3
 
 typedef enum _DIRECTION {
     LEFT,

@@ -12,7 +12,7 @@ Needed by any files: Yes; will call load functions at beginning of game loop; fo
 
 graphic enemy_graphic = (graphic) {
     .graphic_array = {
-        { 0x02FF0000, 0x02FF0000, 0x02FF0000, 0x02FF0000 },
+        { 0x02FF0000, 0x02FF0000, 0x02FF00FF, 0x02FF0000 },
         { 0x02FF0000, 0x02FF0000, 0x02FF0000, 0x02FF0000 },
         { 0x02FF0000, 0x02FF0000, 0x02FF0000, 0x02FF0000 },
         { 0x02FF0000, 0x02FF0000, 0x02FF0000, 0x02FF0000 }
