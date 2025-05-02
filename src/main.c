@@ -57,8 +57,8 @@ int furthest_right = 0;
 int furthest_bottom = 0;
 int move_down_flag = 0;
 
-#define TEST_PLAYER 1
-#define TEST_INPUT 1
+#define TEST_PLAYER 0
+#define TEST_INPUT 0
 #define TEST_LASER 0
 #define TEST_ENEMIES 0
 #define TEST_MAINMENU 0
@@ -406,35 +406,43 @@ int enemies_reach_bottom() {
   return 0;
 }
 
+
 int main()
 {
     internal_clock();
     init_keypad();
     init_computer_feedback();
-    
-    init_matrix();
-    init_display();
 
-    // begin_game();
+    init_usart5();
+    enable_tty_interrupt();
 
-    draw_rectangle(1, 1, 1, 16, 32, 8, 8);
-    draw_pixel(1, 0, 0, 0, 0);
-
-    // get rid of buffers for printing
     setbuf(stdin,0); 
     setbuf(stdout,0);
     setbuf(stderr,0);
-
-    setup_adc();
-    init_tim2();
-
-    init_7_segment_display();
-    set_message("Initiatalzing");
+    mount(0, NULL);
     
-    init_sound_effects();
-    init_audio_output();
+    pre_init_audio();
+    
+    // command_shell();
 
-    begin_game();
+    // init_matrix();
+    // init_display();
+
+    // // begin_game();
+
+    // draw_rectangle(1, 1, 1, 16, 32, 8, 8);
+    // draw_pixel(1, 0, 0, 0, 0);
+
+    // setup_adc();
+    // init_tim2();
+
+    // init_7_segment_display();
+    // set_message("Initiatalzing");
+    
+    // init_sound_effects();
+    // init_audio_output();
+
+    // begin_game();
 
 
 

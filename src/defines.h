@@ -108,6 +108,13 @@ void init_keypad();
 void set_col(int col);
 void SysTick_Handler();
 
+// from commands.c
+void command_shell(void);
+void mount(int argc, char *argv[]);
+void f_write_wrapper(unsigned char shoot_raw[1480], char * FILENAME);
+void load_wav_files(int len, unsigned char shoot_raw[1480], unsigned char invaderkilled_raw[1225], char explosion_raw[2376], char* FILENAME);
+
+
 // from LedMatrix.c
 void init_matrix(); // first invoke init_matrix, then init_display
 void init_display();
@@ -142,6 +149,7 @@ void set_message(char* msg);
 
 // from SDcard.c
 graphic* load_graphic(G_ID id);
+void pre_init_audio();
 
 // do not call these:
 void init_spi1();
