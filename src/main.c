@@ -1,13 +1,14 @@
 #include "defines.h"
 #include <stddef.h>
+#include <stdlib.h>
 #include <time.h>
 
 #define STARTING_X 5
 #define STARTING_Y 0
 #define STARTING_ENEMY_HEALTH 1
 #define STARTING_PLAYER_HEALTH 5
-#define LASER_SPEED 5
-#define ENEMY_SPEED 5
+#define LASER_SPEED 1
+#define ENEMY_SPEED 1
 #define Vec2d_ZERO (Vec2d) { 0, 0 }
 #define Z_LEVEL_MASK 0xFF000000
 #define Z_LEVEL_POS 24
@@ -18,9 +19,6 @@
 #define B_COLOR_MASK 0x000000FF
 #define B_COLOR_POS 0
 
-#define LCD_WIDTH 1
-#define LCD_HEIGHT 1
-
 void loop();
 void begin_game();
 void go_leaderboard();
@@ -30,14 +28,13 @@ void spawn_wave(enemy* enemy_arr, int row); // do it this way to avoid using the
 void move_sprite(sprite* s, int* hit_wall_flag);
 void player_shoot(player* p, laser* l);
 
-void clear_world();
+void clear_world(uint32_t color);
 void add_to_world(sprite* s);
 void display_world();
 
 // collision detection
 void check_laser_hit(laser* l, enemy enemies[ENEMY_ROWS][ENEMY_COLS]);
 void check_enemy_on_wall(enemy enemies[ENEMY_ROWS][ENEMY_COLS]);
-void check_player_on_wall(player* p);
 
 int is_wave_beat();
 void next_round(player* p, laser* l);
@@ -58,11 +55,19 @@ int furthest_bottom = 0;
 int move_down_flag = 0;
 
 #define TEST_PLAYER 1
-#define TEST_INPUT 0
-#define TEST_LASER 0
+#define TEST_INPUT 1
+#define TEST_LASER 1
 #define TEST_ENEMIES 0
 #define TEST_MAINMENU 0
 #define TEST_END_MENU 0
+
+int min(int num1, int num2) {
+  return num1 < num2 ? num1 : num2;
+}
+
+int max(int num1, int num2) {
+  return num1 > num2 ? num1 : num2;
+}
 
 // game loop running each frame
 void loop() {
@@ -71,27 +76,37 @@ void loop() {
   // settup
   player p = new_player();
 
-#if TEST_LASER
-  laser l;
-#endif
+  laser l = (laser) {
+    .alive = 0,
+    .s = (sprite) {
+      .graphic = load_graphic(LASER_GID),
+      .position = Vec2d_ZERO,
+      .velocity = (Vec2d) { 0, LASER_SPEED },
+      .id = LASER_EID
+    }
+  };
 
-  int quit_time = 0;
   int hit_wall_flag;
-  extern volatile char last_char_pressed;
 
   // creating enemies!
-#if TEST_ENEMIES
   enemy enemies[ENEMY_ROWS][ENEMY_COLS];
   for (int i = 0; i < ENEMY_ROWS; ++i) {
     spawn_wave(enemies[i], i);
   }
+#if TEST_ENEMIES
 #endif
 
   // begin game!
 #if TEST_INPUT
+  int my_timer = 0;
+  char message[8];
   for (;;) {
+    sprintf(message, "%4d%4d", my_timer, curr_hit);
+    set_message(message);
+    furthest_bottom = LCD_HEIGHT;
     p.s.velocity.x = 0;
-    switch(last_char_pressed) {
+    my_timer++;
+    switch(get_last_pressed_char()) {
       case 'A': // move right!
         p.s.velocity.x = 1;
         break;
@@ -101,56 +116,79 @@ void loop() {
       case 'C': // move left
         p.s.velocity.x = -1;
         break;
-#if TEST_LASER
       case 'D': // SHOOT
-        if (p.last_shot <= p.cooldown + time(NULL)) {
+        if (!l.alive || p.last_shot <= p.cooldown + time(NULL)) {
           player_shoot(&p, &l);
         }
         break;
+#if TEST_LASER
 #endif
-      case 'E': // prime the quit
-        quit_time = time(NULL);
+      // case 'E': // prime the quit
+      //   quit_time = time(NULL);
+      //   break;
+      // case 'F': // actually quit
+      //   if (quit_time + 5 <= time(NULL)) // within 5 seconds of priming, quit game
+      //     goto end_game_goto;
+      //   else
+      //     quit_time = time(NULL); // reprime
+      default:
         break;
-      case 'F': // actually quit
-        if (quit_time + 5 <= time(NULL)) // within 5 seconds of priming, quit game
-          goto end_game_goto;
-        else
-          quit_time = time(NULL); // reprime
     }
+  
 #endif
 
     // applying all physics to the entites
     move_sprite(&p.s, &hit_wall_flag);
+    
+    if (l.alive == 1) {
+      move_sprite(&l.s, &hit_wall_flag);
+      if (hit_wall_flag == 1) {
+        l.alive = 0;
+      }
+    }
 
 #if TEST_LASER
-    move_sprite(&l.s, &hit_wall_flag);
 #endif
 
     // collision checking
     // move laser and check if it hits before even moving enemies
 
+    if (l.alive == 1)
+      check_laser_hit(&l, enemies);
 #if TEST_ENEMIES && TEST_LASER
-    check_laser_hit(&l, enemies);
 #endif
-#if TEST_ENEMIES
+
     check_enemy_on_wall(enemies);
+#if TEST_ENEMIES
 #endif
-    check_player_on_wall(&p);
+
+    furthest_left = INT8_MAX;
+    furthest_right = INT16_MIN;
 
     // moving enemies and adding graphics to world in one loop
-#if TEST_ENEMIES
     for (int i = 0; i < ENEMY_ROWS; ++i) {
       for (int j = 0; j < ENEMY_COLS; ++j) {
+        if (enemies[i][j].curr_health <= 0) 
+          continue;
+        enemies[i][j].s.velocity = (Vec2d) { .x = enemy_velocity_x, -move_down_flag * ENEMY_SPEED };
         move_sprite(&enemies[i][j].s, &hit_wall_flag);
+        furthest_left = min(enemies[i][j].s.position.x, furthest_left);
+        furthest_right = max(enemies[i][j].s.position.x, furthest_right);
+        furthest_bottom = min(enemies[i][j].s.position.y, furthest_bottom);
         add_to_world(&enemies[i][j].s);
       }
     }
+
+    
+    
+#if TEST_ENEMIES
 #endif
 
     // adding the graphics to the world array
     add_to_world(&p.s);
+    if (l.alive == 1)
+      add_to_world(&l.s);
 #if TEST_LASER
-    add_to_world(&l.s);
 #endif
     
     // displaying the whole world to the tft display
@@ -158,21 +196,22 @@ void loop() {
 
 
     // if all enemies are defeated, go to next round
-#if TEST_ENEMIES && TEST_LASER
-    if (is_wave_beat()) {
-      next_round(&p, &l);
-    } else if (enemies_reach_bottom(enemies)) {
+    // if (is_wave_beat()) {
+    //   printf("you beat the wave!\n");
+    //   next_round(&p, &l);
+    // } 
+    if (enemies_reach_bottom(enemies)) {
+      printf("reached bottom\n");
       goto end_game_goto;
-      break;
     }
-  }
-#endif
 
+
+  }
 end_game_goto:
+  printf("ending the game\n");
   end_game();
-#else
-  return;
 #endif
+  return;
 }
 
 /*
@@ -268,7 +307,7 @@ player new_player() {
     .last_shot = 0,
     .cooldown = 5,
     .s = (sprite) {
-      load_graphic(PLAYER_GID),
+      .graphic = load_graphic(PLAYER_GID),
       .position = (Vec2d) { .x = STARTING_X, .y= STARTING_Y },
       .velocity = Vec2d_ZERO,
       .id = PLAYER_EID
@@ -277,13 +316,16 @@ player new_player() {
 }
 
 void spawn_wave(enemy* enemy_arr, int row) {
+  graphic* enemy_graphic = load_graphic(ENEMY_GID);
+  const int space_between = 4;
+  const int padding_to_side = 8;
   for (size_t i = 0; i < ENEMY_COLS; ++i) {
     enemy_arr[i] = (enemy) {
       .curr_health = 3,
       .s = (sprite) {
-        .graphic = load_graphic(ENEMY_GID),
-        .position = (Vec2d) { i, row },
-        .velocity = Vec2d_ZERO,
+        .graphic = enemy_graphic,
+        .position = (Vec2d) { (i * (enemy_graphic->w + space_between)) + padding_to_side, LCD_HEIGHT - (row * (enemy_graphic->h + space_between)) - padding_to_side },
+        .velocity = (Vec2d) { .x =  ENEMY_SPEED, .y = 0 },
         .id = ENEMY_EID
       }
     };
@@ -294,35 +336,42 @@ void spawn_wave(enemy* enemy_arr, int row) {
 void move_sprite(sprite* s, int* hit_wall_flag) {
   s->position.x += s->velocity.x;
   s->position.y += s->velocity.y;
-
-  if (s->position.x >= LCD_WIDTH || s->position.x < 0) {
+  if (s->position.x + s->graphic->w >= LCD_WIDTH + 1 || s->position.x < 0) {
     *hit_wall_flag = 1;
     s->position.x -= s->velocity.x;
   } else if (s->position.y >= LCD_HEIGHT || s->position.y < 0) {
     *hit_wall_flag = 1;
-    s->position.y -= s->position.y;
+    s->position.y -= s->velocity.y;
   }
   else 
     *hit_wall_flag = 0;
+
+  
 }
 
 
 void player_shoot(player* p, laser* l) {
-  *l = (laser) {
-    .alive = 1,
-    .s = (sprite) {
-      .graphic = load_graphic(LASER_GID),
-      .position = p->s.position,
-      .velocity = (Vec2d) { 0, LASER_SPEED },
-      .id = LASER_EID
-    }
-  };
+  printf("shoot!\n");
+  l->alive = 1;
+  l->s.position = p->s.position;
+  p->last_shot = time(NULL);
+  play_sfx(LASER_SHOOT_SID);
+  // *l = (laser) {
+  //   .alive = 1,
+  //   .s = (sprite) {
+  //     .graphic = load_graphic(LASER_GID),
+  //     // .position = p->s.position,
+  //     .position = (Vec2d) { 20, 20 },
+  //     .velocity = (Vec2d) { 0, LASER_SPEED },
+  //     .id = LASER_EID
+  //   }
+  // };
 }
 
-void clear_world() {
+void clear_world(uint32_t clear_color) {
   for (size_t i = 0; i < LCD_HEIGHT; ++i) {
     for (size_t j = 0; j < LCD_WIDTH; ++j) {
-      world_graphic[i][j] = 0;
+      world_graphic[i][j] = clear_color;
     }
   }
 }
@@ -332,11 +381,11 @@ void add_to_world(sprite* s) {
   Vec2d pos = s->position;
   for (size_t i = 0; i < g->h; ++i) {
     for (size_t j = 0; j < g->w; ++j) {
-      uint8_t z_level = (world_graphic[i+pos.y][i+pos.x] & Z_LEVEL_MASK) >> 24;
+      uint8_t z_level = (world_graphic[i+pos.y][j+pos.x] & Z_LEVEL_MASK) >> 24;
       if (z_level >= g->z_level)
         continue;
       uint32_t color = (g->z_level << Z_LEVEL_POS) + g->graphic_array[i][j];
-      world_graphic[i+pos.y][i+pos.x] = color;
+      world_graphic[i+pos.y][j+pos.x] = color;
     }
   }
 }
@@ -344,6 +393,9 @@ void add_to_world(sprite* s) {
 void display_world() {
   for (size_t i = 0; i < LCD_HEIGHT; ++i) {
     for (size_t j = 0; j < LCD_WIDTH; ++j) {
+      // draw_pixel(
+      //   0, 1, 0, j, i
+      // );
       draw_pixel(
         (world_graphic[i][j] & R_COLOR_MASK) >> R_COLOR_POS,
         (world_graphic[i][j] & G_COLOR_MASK) >> G_COLOR_POS,
@@ -355,36 +407,62 @@ void display_world() {
 
   // after displaying, clear world for next display
   // for better optimizations, would ideally keep the same display from pervious cycle and simply manipulate it
-  clear_world();
+  clear_world(0x00);
+}
+
+int is_collision(sprite* s1, sprite* s2) {
+  if (s1->position.x < s2->position.x + s2->graphic->w &&
+      s1->position.x + s1->graphic->w > s2->position.x &&
+      s1->position.y < s2->position.y + s2->graphic->h &&
+      s1->position.y + s1->graphic->h > s2->position.y ) {
+      return 1;
+  }
+  return 0;
 }
 
 void check_laser_hit(laser* l, enemy enemies[ENEMY_ROWS][ENEMY_COLS]) {
   if (!l->alive)
     return;
 
-  for (size_t i = 0; i < ENEMY_ROWS; ++i) {
-    for (size_t j = 0; j < ENEMY_ROWS; ++j) {
-      enemy* curr_enemy = &enemies[i][j];
+  for (size_t col = 0; col < ENEMY_COLS; ++col) {
+    for (int row = ENEMY_ROWS - 1; row >= 0; --row) {
+      enemy* curr_enemy = &enemies[row][col];
       if (curr_enemy->curr_health <= 0) 
         continue;
-      // check colission again
-      if ((curr_enemy->s.position.x >= l->s.position.x && curr_enemy->s.position.x <= l->s.position.x + curr_enemy->s.graphic->w) &&
-      (curr_enemy->s.position.y >= l->s.position.y && curr_enemy->s.position.y <= l->s.position.y + curr_enemy->s.graphic->h)) {
+      if (is_collision(&(l->s), &(curr_enemy->s)) != 0) {
         curr_enemy->curr_health--;
-        if (curr_enemy->curr_health == 0)
+        if (curr_enemy->curr_health == 0) {
           curr_hit++;
+        }
         l->alive = 0;
         return;
       }
     }
   }
+
+  // for (size_t i = 0; i < ENEMY_ROWS; ++i) {
+  //   for (size_t j = 0; j < ENEMY_COLS; ++j) {
+  //     enemy* curr_enemy = &enemies[i][j];
+  //     if (curr_enemy->curr_health <= 0) 
+  //       continue;
+  //     // check colission again
+  //     if (is_collision(l, curr_enemy)) {
+  //       printf("HIT\n");
+  //       curr_enemy->curr_health--;
+  //       if (curr_enemy->curr_health == 0)
+  //         curr_hit++;
+  //       l->alive = 0;
+  //       return;
+  //     }
+  //   }
+  // }
 }
 
 void check_enemy_on_wall(enemy enemies[ENEMY_ROWS][ENEMY_COLS]) {
-  if (furthest_left <= 10) {
+  if (furthest_left <= 2) {
     move_down_flag = 1;
     enemy_velocity_x = ENEMY_SPEED;  // make direction to the right
-  } else if (furthest_right >= LCD_WIDTH - 10) {
+  } else if (furthest_right >= LCD_WIDTH - 6) {
     move_down_flag = 1;
     enemy_velocity_x = -ENEMY_SPEED; // make direction to the left
   } else {
@@ -405,7 +483,6 @@ int enemies_reach_bottom() {
   if (furthest_bottom <= 5) return 1;
   return 0;
 }
-
 
 int main()
 {

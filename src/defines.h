@@ -13,6 +13,9 @@
 #define LED_DEPTH 64 // dimensions of the actual LED matrix 
 #define LED_LENGTH 32 // actual LED matrix dimensions
 
+#define LCD_HEIGHT 64
+#define LCD_WIDTH 32
+
 // STRUCTURES:
 
 // struct to hold the sound wave when loaded in for dac.c
@@ -34,8 +37,8 @@ typedef struct _sound_effect {
 
 
 // of currently unknown usage
-#define ENEMY_ROWS 5
-#define ENEMY_COLS 6
+#define ENEMY_ROWS 2
+#define ENEMY_COLS 2
 
 typedef enum _DIRECTION {
     LEFT,
@@ -74,7 +77,7 @@ typedef struct _Vec2d {
 typedef struct _graphic {
     // bits 0-7 hold r, 8-15 g, 16 - 24 hold b
     // pointer to a global array of 
-    uint32_t graphic_array[LED_DEPTH][LED_LENGTH];  // x by y array describing the colors of a given space; given const width and height to avoid heap; is a global graphic
+    uint32_t graphic_array[10][10];  // x by y array describing the colors of a given space; given const width and height to avoid heap; is a global graphic
     uint8_t w;                                      // width
     uint8_t h;                                      // height
     uint8_t z_level;                                // higher z level lets you get placed over other graphics when overlapping    
@@ -104,16 +107,10 @@ void internal_clock();
 
 // from keypad.c
 void init_keypad();
+char get_last_pressed_char();
 // don't use the ones below
 void set_col(int col);
 void SysTick_Handler();
-
-// from commands.c
-void command_shell(void);
-void mount(int argc, char *argv[]);
-void f_write_wrapper(unsigned char shoot_raw[1480], char * FILENAME);
-void load_wav_files(int len, unsigned char shoot_raw[1480], unsigned char invaderkilled_raw[1225], char explosion_raw[2376], char* FILENAME);
-
 
 // from LedMatrix.c
 void init_matrix(); // first invoke init_matrix, then init_display

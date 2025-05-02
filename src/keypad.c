@@ -78,3 +78,8 @@ void SysTick_Handler()
     // turn on PC 8 - current col while turning off the rest of PC 4-7
     set_col(current_col);
 }
+
+char get_last_pressed_char()
+{
+    return last_char_pressed;
+}
