@@ -1,5 +1,6 @@
 #include "defines.h"
 #include <stddef.h>
+#include <stdlib.h>
 #include <time.h>
 
 #define STARTING_X 5
@@ -79,17 +80,12 @@ void loop() {
     .alive = 0,
     .s = (sprite) {
       .graphic = load_graphic(LASER_GID),
-      // .position = p->s.position,
       .position = Vec2d_ZERO,
       .velocity = (Vec2d) { 0, LASER_SPEED },
       .id = LASER_EID
     }
   };
 
-#if TEST_LASER
-#endif
-
-  int quit_time = 0;
   int hit_wall_flag;
 
   // creating enemies!
@@ -102,9 +98,14 @@ void loop() {
 
   // begin game!
 #if TEST_INPUT
+  int my_timer = 0;
+  char message[8];
   for (;;) {
+    sprintf(message, "%4d%4d", my_timer, curr_hit);
+    set_message(message);
     furthest_bottom = LCD_HEIGHT;
     p.s.velocity.x = 0;
+    my_timer++;
     switch(get_last_pressed_char()) {
       case 'A': // move right!
         p.s.velocity.x = 1;
