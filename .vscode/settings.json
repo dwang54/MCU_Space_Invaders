@@ -5,6 +5,9 @@
         "stdio.h": "c",
         "stdint.h": "c",
         "stm32f0xx.h": "c",
-        "defines.h": "c"
+        "defines.h": "c",
+        "commands.h": "c",
+        "stddef.h": "c",
+        "time.h": "c"
     }
 }

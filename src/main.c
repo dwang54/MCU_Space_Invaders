@@ -484,24 +484,31 @@ int enemies_reach_bottom() {
   return 0;
 }
 
+
 int main()
 {
     internal_clock();
     init_keypad();
     init_computer_feedback();
-    
-    init_matrix();
-    init_display();
 
-    // begin_game();
+    init_usart5();
+    enable_tty_interrupt();
 
-    // draw_rectangle(1, 1, 1, 16, 32, 8, 8);
-    // draw_pixel(1, 0, 0, 0, 0);
-
-    // get rid of buffers for printing
     setbuf(stdin,0); 
     setbuf(stdout,0);
     setbuf(stderr,0);
+    mount(0, NULL);
+    
+    // command_shell();
+
+    pre_init_audio();
+    disable_sdcard();
+
+    init_matrix();
+    init_display();
+    
+    // draw_rectangle(1, 1, 1, 16, 32, 8, 8);
+    // draw_pixel(1, 0, 0, 0, 0);
 
     setup_adc();
     init_tim2();
@@ -513,21 +520,6 @@ int main()
     init_audio_output();
 
     begin_game();
-    // clear_world();
-    // player p = new_player();
-    // p.s.position = (Vec2d) { .x = 10, .y = 10 };
-    // add_to_world(&p.s);
-    // display_world();
-    // clear_world();
-    // laser l;
-    // player_shoot(&p, &l);
-
-    // for (int i = 0; i < 10; ++i) 
-    //   move_sprite(&l.s, NULL);
-
-    
-
-
 
     // let interrupts run the rest of the program
     for(;;) 

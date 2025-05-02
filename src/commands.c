@@ -288,6 +288,58 @@ void dino(int argc, char *argv[])
     puts(str);
 }
 
+// void f_write_wrapper(unsigned char shoot_raw[1480], const char* FILENAME){
+//     FIL fil;        /* File object */
+//     FRESULT fr;     /* FatFs return code */
+//     UINT wlen;
+
+//     fr = f_open(&fil, FILENAME, FA_WRITE|FA_CREATE_NEW);
+
+//     if (fr) {
+//         print_error(fr, FILENAME);
+//         return;
+//     }
+
+//     printf("writing to file\n");
+
+//     char line[100] = "Yoshi\n";
+//     fr = f_write(&fil, (BYTE*) line, strlen(line), &wlen);
+
+//     printf("done\n");
+//     printf("wrote %d number of bytes\n", wlen);
+
+//     if (fr)
+//         print_error(fr, FILENAME);
+
+    // int total = 1480;
+    // for (size_t i = 0; i < 1480; i += 100) {
+    //     int curr = 100;
+    //     if (total < 100) curr = total;
+    //     fr = f_write(&fil, (BYTE*)(shoot_raw + i), curr, NULL);
+    //     total -= curr;
+    // }
+
+//     fclose(&fil);
+// }
+
+// void load_wav_files(int len, unsigned char shoot_raw[1480], unsigned char invaderkilled_raw[1225], char explosion_raw[2376])
+// {
+//     FIL fil;        /* File object */
+//     FRESULT fr;     /* FatFs return code */
+//     char* explosion = "wavfiles.txt";
+//     char* kill = "killed.txt";
+//     char* shoot = "shoot.txt";
+//     fr = f_open(&fil, explosion, FA_READ);
+//     if (fr) {
+//         print_error(fr, FILENAME);
+//         return;
+//     }
+//     f_gets(shoot_raw, 1480, &fil);
+//     f_gets(invaderkilled_raw, sizeof invaderkilled_raw, &fil);
+//     f_gets(explosion_raw, sizeof explosion_raw, &fil);
+//     f_close(&fil);
+// }
+
 void input(int argc, char *argv[])
 {
     if (argc != 2) {
@@ -295,7 +347,7 @@ void input(int argc, char *argv[])
         return;
     }
     FIL fil;        /* File object */
-    char line[100]; /* Line buffer */
+    char line[1000]; /* Line buffer */
     FRESULT fr;     /* FatFs return code */
     fr = f_open(&fil, argv[1], FA_WRITE|FA_CREATE_NEW);
     if (fr) {
