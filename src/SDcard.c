@@ -172,17 +172,17 @@ void init_usart5() {
   }
   
   void enable_sdcard() {
-      GPIOB->ODR &= ~(0b1 << 2); //PB2 
+      GPIOB->ODR &= ~(0b1 << 13); //PB13
   }
   
   void disable_sdcard() {
-      GPIOB->ODR |= (0b1 << 2); //PB2 high
+      GPIOB->ODR |= (0b1 << 13); //PB13 high
   }
   
   void init_sdcard_io() {
       init_spi1_slow();
-      GPIOB->MODER &= ~(0b11 << GPIO_MODER_MODER2_Pos);
-      GPIOB->MODER |= (0b01 << GPIO_MODER_MODER2_Pos); //PB2 as output
+      GPIOB->MODER &= ~(0b11 << GPIO_MODER_MODER13_Pos);
+      GPIOB->MODER |= (0b01 << GPIO_MODER_MODER13_Pos); //PB2 as output
       disable_sdcard();
   }
   

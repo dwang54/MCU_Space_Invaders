@@ -150,6 +150,7 @@ void set_message(char* msg);
 // from SDcard.c
 graphic* load_graphic(G_ID id);
 void pre_init_audio();
+void disable_sdcard();
 
 // do not call these:
 void init_spi1();

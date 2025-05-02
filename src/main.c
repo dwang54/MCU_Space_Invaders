@@ -57,7 +57,7 @@ int furthest_right = 0;
 int furthest_bottom = 0;
 int move_down_flag = 0;
 
-#define TEST_PLAYER 0
+#define TEST_PLAYER 1
 #define TEST_INPUT 0
 #define TEST_LASER 0
 #define TEST_ENEMIES 0
@@ -421,31 +421,27 @@ int main()
     setbuf(stderr,0);
     mount(0, NULL);
     
-    pre_init_audio();
-    
     // command_shell();
 
-    // init_matrix();
-    // init_display();
+    pre_init_audio();
+    disable_sdcard();
 
-    // // begin_game();
-
+    init_matrix();
+    init_display();
+    
     // draw_rectangle(1, 1, 1, 16, 32, 8, 8);
     // draw_pixel(1, 0, 0, 0, 0);
 
-    // setup_adc();
-    // init_tim2();
+    setup_adc();
+    init_tim2();
 
-    // init_7_segment_display();
-    // set_message("Initiatalzing");
+    init_7_segment_display();
+    set_message("Initiatalzing");
     
-    // init_sound_effects();
-    // init_audio_output();
+    init_sound_effects();
+    init_audio_output();
 
-    // begin_game();
-
-
-
+    begin_game();
 
     // let interrupts run the rest of the program
     for(;;) 
